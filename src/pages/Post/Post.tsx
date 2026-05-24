@@ -1,13 +1,69 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Divider, Footer, Loading } from "animal-island-ui";
-import { posts } from "../../data/posts";
+import { marked } from "marked";
+import hljs from "highlight.js";
+import { usePosts } from "../../hooks/usePosts";
+import "../../markdown.css";
+import "highlight.js/styles/atom-one-dark.css";
+import type { PostSection } from "../../data/posts";
+
+function sectionsToMarkdown(sections: PostSection[]): string {
+  return sections
+    .map((s) => {
+      const heading = `## ${s.heading}`;
+      const body = s.paragraphs.join("\n\n");
+      return `${heading}\n\n${body}`;
+    })
+    .join("\n\n");
+}
+
+function escapeAttr(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function buildHtml(markdown: string): string {
+  const renderer = new marked.Renderer();
+
+  renderer.code = function ({ text, lang }: { text: string; lang?: string }) {
+    const langLabel = lang || "plain text";
+
+    let highlighted: string;
+    if (lang && hljs.getLanguage(lang)) {
+      const result = hljs.highlight(text, { language: lang });
+      highlighted = result.value;
+    } else {
+      highlighted = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    return `
+<div class="code-block-wrapper">
+  <div class="code-block-header">
+    <span class="code-block-lang">${langLabel}</span>
+    <button class="code-block-copy" data-code="${escapeAttr(text)}">复制</button>
+  </div>
+  <pre><code class="hljs language-${langLabel}">${highlighted}</code></pre>
+</div>`.trim();
+  };
+
+  marked.setOptions({ renderer });
+  return marked.parse(markdown) as string;
+}
 
 function Post() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { posts } = usePosts();
   const [isLoading, setIsLoading] = useState(true);
   const isFirstLoad = useRef(true);
+  const contentRef = useRef<HTMLElement>(null);
 
   const post = posts.find((p) => p.id === id);
   const currentIndex = posts.findIndex((p) => p.id === id);
@@ -26,6 +82,33 @@ function Post() {
     }
   }, [id]);
 
+  const handleCopy = useCallback((e: MouseEvent) => {
+    const btn = e.target as HTMLElement;
+    if (!btn.classList.contains("code-block-copy")) return;
+    const code = btn.getAttribute("data-code");
+    if (!code) return;
+    const text = code
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">");
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = "已复制";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = "复制";
+        btn.classList.remove("copied");
+      }, 2000);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    el.addEventListener("click", handleCopy);
+    return () => el.removeEventListener("click", handleCopy);
+  }, [handleCopy]);
+
   if (!post) {
     return (
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", textAlign: "center" }}>
@@ -41,6 +124,8 @@ function Post() {
       </div>
     );
   }
+
+  const htmlBody = buildHtml(sectionsToMarkdown(post.sections));
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 20px 40px" }}>
@@ -89,22 +174,13 @@ function Post() {
 
       <Divider type="line-teal" />
 
-      {/* Article body */}
-      <article>
-        {post.sections.map((section, i) => (
-          <section key={i} style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 22, marginBottom: 12 }}>{section.heading}</h2>
-            {section.paragraphs.map((p, j) => (
-              <p
-                key={j}
-                style={{ fontSize: 16, lineHeight: 1.9, color: "#444", marginBottom: 12 }}
-              >
-                {p}
-              </p>
-            ))}
-          </section>
-        ))}
-      </article>
+      {/* Article body (Markdown rendered) */}
+      <article
+        ref={contentRef}
+        className="blog-post-content"
+        dangerouslySetInnerHTML={{ __html: htmlBody }}
+        style={{ fontSize: 16, lineHeight: 1.9, color: "#444" }}
+      />
 
       {/* Takeaways */}
       <Card color="app-yellow">

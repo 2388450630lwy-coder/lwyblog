@@ -12,15 +12,9 @@ import {
   Switch,
   Phone,
 } from "animal-island-ui";
-import { posts } from "../../data/posts";
+import { usePosts } from "../../hooks/usePosts";
 import "./Home.less";
 
-const stats = [
-  { label: "文章", value: "12", emoji: "📝" },
-  { label: "标签", value: "8", emoji: "🏷️" },
-  { label: "来访者", value: "1.2k", emoji: "👣" },
-  { label: "咖啡", value: "∞", emoji: "☕" },
-];
 
 const aboutTags = [
   "React / TS",
@@ -56,6 +50,13 @@ const faqData = [
 
 function Home() {
   const navigate = useNavigate();
+  const { posts } = usePosts();
+  const stats = [
+    { label: "文章", value: String(posts.length), emoji: "📝" },
+    { label: "标签", value: String(new Set(posts.map((p) => p.tag)).size), emoji: "🏷️" },
+    { label: "来访者", value: "1.2k", emoji: "👣" },
+    { label: "咖啡", value: "∞", emoji: "☕" },
+  ];
   const [introOpen, setIntroOpen] = useState(
     () => !localStorage.getItem("lwyblog-visited")
   );
@@ -94,6 +95,9 @@ function Home() {
             </Button>
             <Button type="text" onClick={() => scrollTo("faq")}>
               FAQ
+            </Button>
+            <Button type="text" onClick={() => navigate("/admin")}>
+              管理
             </Button>
           </nav>
           <Switch

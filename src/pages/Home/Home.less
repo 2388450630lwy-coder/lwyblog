@@ -1,10 +1,14 @@
+body {
+    background: #b8d4e8;
+    margin: 0;
+}
+
 .blog {
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
     padding: 24px 24px 0;
     color: #3b2f22;
-    box-shadow: 0 0 0 100vw transparent;
     clip-path: inset(0 -100vw);
     transition: background 0.3s, color 0.3s, box-shadow 0.3s;
 
@@ -102,8 +106,9 @@
 }
 
 .blog-hero-phone {
+    display: flex;
+    justify-content: center;
     margin-top: 40px;
-    transform-origin: center;
 }
 
 // Stats
@@ -217,7 +222,7 @@
 .blog-post-excerpt {
     font-size: 14px;
     line-height: 1.6;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .blog-post-meta {
@@ -225,7 +230,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    opacity: 0.75;
+    opacity: 0.85;
     margin-top: 12px;
 }
 

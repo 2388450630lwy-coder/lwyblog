@@ -3,6 +3,7 @@ import { Cursor } from "animal-island-ui";
 import "animal-island-ui/style";
 import Home from "./pages/Home/Home";
 import Post from "./pages/Post/Post";
+import Admin from "./pages/Admin/Admin";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/posts/:id" element={<Post />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </HashRouter>
     </Cursor>
