@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -56,18 +56,17 @@ const faqData = [
 
 function Home() {
   const navigate = useNavigate();
-  const [introOpen, setIntroOpen] = useState(false);
+  const [introOpen, setIntroOpen] = useState(
+    () => !localStorage.getItem("lwyblog-visited")
+  );
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
   const [dark, setDark] = useState(false);
 
-  useEffect(() => {
-    const visited = localStorage.getItem("lwyblog-visited");
-    if (!visited) {
-      setIntroOpen(true);
-      localStorage.setItem("lwyblog-visited", "true");
-    }
+  const closeIntro = useCallback(() => {
+    setIntroOpen(false);
+    localStorage.setItem("lwyblog-visited", "true");
   }, []);
 
   const scrollTo = useCallback((id: string) => {
@@ -255,7 +254,8 @@ function Home() {
       {/* Welcome Modal */}
       <Modal
         open={introOpen}
-        onClose={() => setIntroOpen(false)}
+        onClose={closeIntro}
+        onOk={closeIntro}
         title="🌿 欢迎来到无人岛"
       >
         <div className="blog-modal-text">
