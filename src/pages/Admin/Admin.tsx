@@ -200,7 +200,7 @@ export default function Admin() {
       }}
     >
       <div className="admin-toolbar">
-        <Button type="text" onClick={() => {
+        <Button type="primary" onClick={() => {
           sessionStorage.removeItem(AUTH_KEY);
           setAuthed(false);
         }}>
