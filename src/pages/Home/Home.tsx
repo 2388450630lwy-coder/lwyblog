@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -63,7 +63,14 @@ function Home() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => {
+    return localStorage.getItem("lwyblog-dark") === "1";
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("lwyblog-dark", dark ? "1" : "0");
+  }, [dark]);
 
   const closeIntro = useCallback(() => {
     setIntroOpen(false);

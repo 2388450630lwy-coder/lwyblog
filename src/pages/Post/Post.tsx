@@ -61,6 +61,7 @@ function Post() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { posts } = usePosts();
+  const dark = document.documentElement.classList.contains("dark");
   const [isLoading, setIsLoading] = useState(true);
   const isFirstLoad = useRef(true);
   const contentRef = useRef<HTMLElement>(null);
@@ -128,7 +129,17 @@ function Post() {
   const htmlBody = buildHtml(sectionsToMarkdown(post.sections));
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 20px 40px" }}>
+    <div
+      className={dark ? "post--dark" : ""}
+      style={{
+        maxWidth: 800,
+        margin: "0 auto",
+        padding: "0 20px 40px",
+        color: dark ? "#e0d8c8" : "#444",
+        background: dark ? "#1a1a2e" : "transparent",
+        minHeight: "100vh",
+      }}
+    >
       {isLoading && <Loading />}
 
       {/* Back button */}

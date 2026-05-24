@@ -22,6 +22,7 @@ function setAuth() {
 export default function Admin() {
   const navigate = useNavigate();
   const { posts, addPost, updatePost, deletePost } = usePosts();
+  const dark = document.documentElement.classList.contains("dark");
 
   const [authed, setAuthed] = useState(getAuth);
   const [username, setUsername] = useState("");
@@ -143,7 +144,14 @@ export default function Admin() {
   // ----- Login screen -----
   if (!authed) {
     return (
-      <div className="admin">
+      <div
+        className={`admin${dark ? " admin--dark" : ""}`}
+        style={{
+          background: dark ? "#1a1a2e" : "transparent",
+          color: dark ? "#e0d8c8" : "#3b2f22",
+          minHeight: "100vh",
+        }}
+      >
         <div className="admin-login">
           <Card color="app-green">
             <div style={{ padding: 40, textAlign: "center", maxWidth: 360, margin: "0 auto" }}>
@@ -183,7 +191,14 @@ export default function Admin() {
 
   // ----- Admin panel -----
   return (
-    <div className="admin">
+    <div
+      className={`admin${dark ? " admin--dark" : ""}`}
+      style={{
+        background: dark ? "#1a1a2e" : "transparent",
+        color: dark ? "#e0d8c8" : "#3b2f22",
+        minHeight: "100vh",
+      }}
+    >
       <header className="admin-header">
         <h1 className="admin-title">管理后台</h1>
         <div style={{ display: "flex", gap: 12 }}>

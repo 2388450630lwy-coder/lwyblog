@@ -1,0 +1,21 @@
+/* Global dark mode */
+html.dark body {
+  background: #1a1a2e;
+  color: #e0d8c8;
+}
+
+html.dark .blog-post-content {
+  color: #d0c8b8;
+}
+
+html.dark .blog-post-content h2 {
+  color: #f3e9d2;
+}
+
+html.dark .admin {
+  color: #e0d8c8;
+}
+
+html.dark .admin-title {
+  color: #f3e9d2;
+}
