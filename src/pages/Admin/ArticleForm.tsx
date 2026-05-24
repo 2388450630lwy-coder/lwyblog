@@ -51,7 +51,6 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [tag, setTag] = useState(initialData?.tag ?? "");
   const [date, setDate] = useState(initialData?.date ?? todayStr());
-  const [readTime, setReadTime] = useState(initialData?.readTime ?? "");
   const [cover, setCover] = useState(initialData?.cover ?? "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
   const [markdown, setMarkdown] = useState(
@@ -82,7 +81,6 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
       title: title.trim(),
       tag: tag.trim(),
       date: date.trim() || todayStr(),
-      readTime: readTime.trim(),
       cover: cover.trim(),
       excerpt: excerpt.trim(),
       sections: cleanSections,
@@ -154,27 +152,15 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div>
-          <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
-            日期
-          </label>
-          <Input
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            placeholder={todayStr()}
-          />
-        </div>
-        <div>
-          <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
-            阅读时长
-          </label>
-          <Input
-            value={readTime}
-            onChange={(e) => setReadTime(e.target.value)}
-            placeholder="如 5 min"
-          />
-        </div>
+      <div>
+        <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
+          日期
+        </label>
+        <Input
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          placeholder={todayStr()}
+        />
       </div>
 
       <div>

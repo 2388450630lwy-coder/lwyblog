@@ -165,7 +165,7 @@ function Post() {
           </span>
           <h1 style={{ margin: "12px 0", fontSize: 28 }}>{post.title}</h1>
           <div style={{ color: "#888", fontSize: 14 }}>
-            {post.date} · {post.readTime}
+            {post.date}
           </div>
         </div>
       </Card>

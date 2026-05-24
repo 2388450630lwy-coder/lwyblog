@@ -162,7 +162,6 @@ function Home() {
                   </p>
                   <div className="blog-post-meta">
                     <span>{post.date}</span>
-                    <span className="blog-post-more">{post.readTime} →</span>
                   </div>
                 </div>
               </Card>

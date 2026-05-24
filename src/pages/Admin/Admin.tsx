@@ -116,12 +116,6 @@ export default function Admin() {
       render: (value: unknown) => String(value),
     },
     {
-      title: "阅读时长",
-      dataIndex: "readTime" as keyof Post,
-      width: "10%",
-      render: (value: unknown) => String(value),
-    },
-    {
       title: "操作",
       dataIndex: "id" as keyof Post,
       width: "30%",

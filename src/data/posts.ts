@@ -8,7 +8,6 @@ export interface Post {
   tag: string;
   title: string;
   date: string;
-  readTime: string;
   cover: string;
   excerpt: string;
   sections: PostSection[];
@@ -21,7 +20,6 @@ export const posts: Post[] = [
     tag: "React",
     title: "使用 React 19 构建现代 Web 应用",
     date: "2026-05-20",
-    readTime: "8 min",
     cover: "🌸",
     excerpt:
       "React 19 带来了许多令人兴奋的新特性，包括 Server Components、Actions 和改进的 Hooks。本文将带你了解这些新特性。",
@@ -58,7 +56,6 @@ export const posts: Post[] = [
     tag: "TypeScript",
     title: "TypeScript 高级类型技巧",
     date: "2026-05-15",
-    readTime: "6 min",
     cover: "🍃",
     excerpt:
       "掌握 TypeScript 的高级类型可以让你写出更安全、更优雅的代码。本文分享一些实用的类型技巧。",
@@ -88,7 +85,6 @@ export const posts: Post[] = [
     tag: "CSS",
     title: "现代 CSS 布局完全指南",
     date: "2026-05-10",
-    readTime: "10 min",
     cover: "🌺",
     excerpt:
       "Flexbox 和 Grid 已经成为了前端布局的标准工具。本文全面介绍它们的用法和最佳实践。",
