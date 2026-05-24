@@ -199,22 +199,13 @@ export default function Admin() {
         minHeight: "100vh",
       }}
     >
-      <header className="admin-header">
-        <h1 className="admin-title">管理后台</h1>
-        <div style={{ display: "flex", gap: 12 }}>
-          <Button type="text" onClick={() => {
-            sessionStorage.removeItem(AUTH_KEY);
-            setAuthed(false);
-          }}>
-            退出登录
-          </Button>
-          <Button type="text" onClick={() => navigate("/")}>
-            ← 返回博客
-          </Button>
-        </div>
-      </header>
-
       <div className="admin-toolbar">
+        <Button type="text" onClick={() => {
+          sessionStorage.removeItem(AUTH_KEY);
+          setAuthed(false);
+        }}>
+          退出登录
+        </Button>
         <Button type="primary" onClick={handleCreate}>
           + 新建文章
         </Button>
