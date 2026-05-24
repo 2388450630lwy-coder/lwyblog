@@ -7,8 +7,8 @@ import type { Post } from "../../data/posts";
 import ArticleForm from "./ArticleForm";
 import "./Admin.less";
 
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "lwyblog2026";
+const ADMIN_USER = "lwy";
+const ADMIN_PASS = "liwenyu2388";
 const AUTH_KEY = "lwyblog-auth";
 
 function getAuth(): boolean {
