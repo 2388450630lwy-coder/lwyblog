@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -63,14 +63,7 @@ function Home() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem("lwyblog-dark") === "1";
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("lwyblog-dark", dark ? "1" : "0");
-  }, [dark]);
+  const dark = document.documentElement.classList.contains("dark");
 
   const closeIntro = useCallback(() => {
     setIntroOpen(false);
@@ -89,33 +82,6 @@ function Home() {
 
   return (
     <div className={`blog ${dark ? "blog--dark" : ""}`}>
-      {/* Header */}
-      <header className="blog-header">
-        <span className="blog-logo">LWY's Island</span>
-        <div className="blog-header-right">
-          <nav className="blog-nav">
-            <Button type="text" onClick={() => scrollTo("posts")}>
-              文章
-            </Button>
-            <Button type="text" onClick={() => scrollTo("about")}>
-              关于
-            </Button>
-            <Button type="text" onClick={() => scrollTo("faq")}>
-              FAQ
-            </Button>
-            <Button type="text" onClick={() => navigate("/admin")}>
-              管理
-            </Button>
-          </nav>
-          <Switch
-            checked={dark}
-            onChange={setDark}
-            checkedChildren="🌙"
-            unCheckedChildren="☀️"
-          />
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="blog-hero">
         <div className="blog-hero-title">
