@@ -135,8 +135,8 @@ function Post() {
         maxWidth: 800,
         margin: "0 auto",
         padding: "0 20px 40px",
-        color: dark ? "#e0d8c8" : "#444",
-        background: dark ? "#1a1a2e" : "transparent",
+        color: dark ? "#f3e9d2" : "#444",
+        background: dark ? "#2a241a" : "transparent",
         minHeight: "100vh",
       }}
     >

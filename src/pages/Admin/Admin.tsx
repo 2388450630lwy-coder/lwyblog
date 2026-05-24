@@ -147,8 +147,8 @@ export default function Admin() {
       <div
         className={`admin${dark ? " admin--dark" : ""}`}
         style={{
-          background: dark ? "#1a1a2e" : "transparent",
-          color: dark ? "#e0d8c8" : "#3b2f22",
+          background: dark ? "#2a241a" : "transparent",
+          color: dark ? "#f3e9d2" : "#3b2f22",
           minHeight: "100vh",
         }}
       >
@@ -194,8 +194,8 @@ export default function Admin() {
     <div
       className={`admin${dark ? " admin--dark" : ""}`}
       style={{
-        background: dark ? "#1a1a2e" : "transparent",
-        color: dark ? "#e0d8c8" : "#3b2f22",
+        background: dark ? "#2a241a" : "transparent",
+        color: dark ? "#f3e9d2" : "#3b2f22",
         minHeight: "100vh",
       }}
     >
