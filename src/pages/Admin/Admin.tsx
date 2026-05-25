@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Modal, Table, Select, Input } from "animal-island-ui";
 import type { TableColumn } from "animal-island-ui";
@@ -25,7 +25,20 @@ export default function Admin() {
   const navigate = useNavigate();
   const { posts, addPost, updatePost, deletePost } = usePosts();
   const { categories, addCategory, updateCategory, deleteCategory, getCategoryName } = useCategories();
-  const dark = document.documentElement.classList.contains("dark");
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const [authed, setAuthed] = useState(getAuth);
   const [username, setUsername] = useState("");

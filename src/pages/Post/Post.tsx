@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Divider, Footer, Loading } from "animal-island-ui";
 import { marked } from "marked";
@@ -57,19 +57,70 @@ function buildHtml(markdown: string): string {
   return marked.parse(markdown) as string;
 }
 
+interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
+/** Add id="" to every h2/h3 in the HTML string, return the processed HTML + TOC items. */
+function injectHeadingIds(html: string): { html: string; toc: TocItem[] } {
+  const el = document.createElement("div");
+  el.innerHTML = html;
+
+  const headings = el.querySelectorAll("h2, h3");
+  const toc: TocItem[] = [];
+
+  headings.forEach((h, i) => {
+    const id = `heading-${i}`;
+    h.setAttribute("id", id);
+    toc.push({
+      id,
+      text: h.textContent || "",
+      level: parseInt(h.tagName.charAt(1)),
+    });
+  });
+
+  return { html: el.innerHTML, toc };
+}
+
 function Post() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { posts } = usePosts();
-  const dark = document.documentElement.classList.contains("dark");
-  const [isLoading, setIsLoading] = useState(true);
-  const isFirstLoad = useRef(true);
-  const contentRef = useRef<HTMLElement>(null);
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  // React to dark mode toggle from Header
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const post = posts.find((p) => p.id === id);
   const currentIndex = posts.findIndex((p) => p.id === id);
   const prevPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
   const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
+
+  // Build HTML with heading IDs baked in — runs synchronously, no timing issues
+  const { htmlBody, tocItems } = useMemo(() => {
+    if (!post) return { htmlBody: "", tocItems: [] as TocItem[] };
+    const raw = buildHtml(sectionsToMarkdown(post.sections));
+    const result = injectHeadingIds(raw);
+    return { htmlBody: result.html, tocItems: result.toc };
+  }, [post]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeId, setActiveId] = useState("");
+  const isFirstLoad = useRef(true);
+  const contentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -83,6 +134,49 @@ function Post() {
     }
   }, [id]);
 
+  // Scroll spy — highlight the first heading at or below the viewport top
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+
+    let rafId = 0;
+
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+
+        for (const item of tocItems) {
+          const el = document.getElementById(item.id);
+          if (!el) continue;
+          if (el.getBoundingClientRect().top >= 0) {
+            setActiveId(item.id);
+            return;
+          }
+        }
+
+        // All headings above viewport — highlight the last one
+        const last = tocItems[tocItems.length - 1];
+        setActiveId(last.id);
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [tocItems]);
+
+  const handleTocClick = (headingId: string) => {
+    setActiveId(headingId);
+    const el = document.getElementById(headingId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const handleCopy = useCallback((e: MouseEvent) => {
     const btn = e.target as HTMLElement;
     if (!btn.classList.contains("code-block-copy")) return;
@@ -92,7 +186,7 @@ function Post() {
       .replace(/&quot;/g, '"')
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">");
+      .replace(/>/g, ">");
     navigator.clipboard.writeText(text).then(() => {
       btn.textContent = "已复制";
       btn.classList.add("copied");
@@ -126,15 +220,10 @@ function Post() {
     );
   }
 
-  const htmlBody = buildHtml(sectionsToMarkdown(post.sections));
-
   return (
     <div
-      className={dark ? "post--dark" : ""}
+      className={dark ? "blog--dark" : ""}
       style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: "0 20px 40px",
         color: dark ? "#f3e9d2" : "#444",
         background: dark ? "#2a241a" : "transparent",
         minHeight: "100vh",
@@ -142,100 +231,129 @@ function Post() {
     >
       {isLoading && <Loading />}
 
-      {/* Back button */}
-      <div style={{ padding: "20px 0" }}>
-        <Button type="text" onClick={() => navigate("/")}>
-          ← 文章一覧に戻る
-        </Button>
-      </div>
+      {/* TOC Sidebar — fixed on the left, aligned with header */}
+      {tocItems.length > 0 && (
+        <aside className="post-toc">
+          <nav className="post-toc-nav">
+              <h4 className="post-toc-title">目录</h4>
+              <ul className="post-toc-list">
+                {tocItems.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      className={`post-toc-link post-toc-level-${item.level} ${activeId === item.id ? "post-toc-active" : ""}`}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleTocClick(item.id);
+                      }}
+                    >
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+        </aside>
+      )}
 
-      {/* Article header */}
-      <Card color="app-green">
-        <div style={{ padding: 32, textAlign: "center" }}>
-          <div style={{ fontSize: 64 }}>{post.cover}</div>
-          <span
+      <div className="post-layout">
+        <div className="post-main">
+          {/* Back button */}
+          <div style={{ padding: "20px 0" }}>
+            <Button type="text" onClick={() => navigate("/")}>
+              ← 文章一覧に戻る
+            </Button>
+          </div>
+
+          {/* Article header */}
+          <Card color="app-green">
+            <div style={{ padding: 32, textAlign: "center" }}>
+              <div style={{ fontSize: 64 }}>{post.cover}</div>
+              <span
+                style={{
+                  background: "rgba(255,255,255,0.6)",
+                  padding: "2px 12px",
+                  borderRadius: 12,
+                  fontSize: 13,
+                }}
+              >
+                {post.tags.map((t) => (
+                  <span key={t} style={{ margin: "0 4px" }}>#{t}</span>
+                ))}
+              </span>
+              <h1 style={{ margin: "12px 0", fontSize: 28 }}>{post.title}</h1>
+              <div style={{ color: "#888", fontSize: 14 }}>
+                {post.date}
+              </div>
+            </div>
+          </Card>
+
+          {/* Excerpt */}
+          <p
             style={{
-              background: "rgba(255,255,255,0.6)",
-              padding: "2px 12px",
-              borderRadius: 12,
-              fontSize: 13,
+              fontSize: 16,
+              color: "#555",
+              lineHeight: 1.8,
+              marginTop: 24,
+              fontStyle: "italic",
             }}
           >
-            {post.tags.map((t) => (
-              <span key={t} style={{ margin: "0 4px" }}>#{t}</span>
-            ))}
-          </span>
-          <h1 style={{ margin: "12px 0", fontSize: 28 }}>{post.title}</h1>
-          <div style={{ color: "#888", fontSize: 14 }}>
-            {post.date}
+            {post.excerpt}
+          </p>
+
+          <Divider type="line-teal" />
+
+          {/* Article body (Markdown rendered, heading IDs baked into HTML) */}
+          <article
+            ref={contentRef}
+            className="blog-post-content"
+            dangerouslySetInnerHTML={{ __html: htmlBody }}
+            style={{ fontSize: 16, lineHeight: 1.9, color: "#444" }}
+          />
+
+          {/* Takeaways */}
+          <Card color="app-yellow">
+            <div style={{ padding: 24 }}>
+              <h3>🌿 这篇文章的要点</h3>
+              <ul style={{ paddingLeft: 20, lineHeight: 2 }}>
+                {post.takeaways.map((t, i) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+
+          <Divider type="wave-yellow" />
+
+          {/* Prev/Next navigation */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 16,
+              marginTop: 20,
+            }}
+          >
+            {prevPost ? (
+              <Button onClick={() => navigate(`/posts/${prevPost.id}`)}>
+                ← {prevPost.title}
+              </Button>
+            ) : (
+              <div />
+            )}
+            {nextPost ? (
+              <Button onClick={() => navigate(`/posts/${nextPost.id}`)}>
+                {nextPost.title} →
+              </Button>
+            ) : (
+              <div />
+            )}
+          </div>
+
+          <div style={{ marginTop: 40 }}>
+            <Footer type="sea" />
           </div>
         </div>
-      </Card>
-
-      {/* Excerpt */}
-      <p
-        style={{
-          fontSize: 16,
-          color: "#555",
-          lineHeight: 1.8,
-          marginTop: 24,
-          fontStyle: "italic",
-        }}
-      >
-        {post.excerpt}
-      </p>
-
-      <Divider type="line-teal" />
-
-      {/* Article body (Markdown rendered) */}
-      <article
-        ref={contentRef}
-        className="blog-post-content"
-        dangerouslySetInnerHTML={{ __html: htmlBody }}
-        style={{ fontSize: 16, lineHeight: 1.9, color: "#444" }}
-      />
-
-      {/* Takeaways */}
-      <Card color="app-yellow">
-        <div style={{ padding: 24 }}>
-          <h3>🌿 这篇文章的要点</h3>
-          <ul style={{ paddingLeft: 20, lineHeight: 2 }}>
-            {post.takeaways.map((t, i) => (
-              <li key={i}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      </Card>
-
-      <Divider type="wave-yellow" />
-
-      {/* Prev/Next navigation */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          marginTop: 20,
-        }}
-      >
-        {prevPost ? (
-          <Button onClick={() => navigate(`/posts/${prevPost.id}`)}>
-            ← {prevPost.title}
-          </Button>
-        ) : (
-          <div />
-        )}
-        {nextPost ? (
-          <Button onClick={() => navigate(`/posts/${nextPost.id}`)}>
-            {nextPost.title} →
-          </Button>
-        ) : (
-          <div />
-        )}
-      </div>
-
-      <div style={{ marginTop: 40 }}>
-        <Footer type="sea" />
       </div>
     </div>
   );

@@ -5,12 +5,14 @@
   font-weight: 800;
   margin: 32px 0 12px;
   color: #3b2f22;
+  scroll-margin-top: 80px;
 }
 
 .blog-post-content h3 {
   font-size: 18px;
   font-weight: 700;
   margin: 24px 0 8px;
+  scroll-margin-top: 80px;
 }
 
 .blog-post-content p {
@@ -183,4 +185,114 @@
 .blog--dark .blog-post-content blockquote {
   border-left-color: #d98c3b;
   color: #b0a898;
+}
+
+/* === Post layout with TOC sidebar === */
+
+.post-layout {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+}
+
+.post-main {
+  /* article content */
+}
+
+/* TOC sidebar — fixed on the left, right edge aligned with header left edge */
+.post-toc {
+  position: fixed;
+  left: max(24px, calc(50vw - 710px));
+  top: 100px;
+  width: 230px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  font-size: 13px;
+  z-index: 40;
+  background: #fdfaf3;
+  border: 1px solid #e8ddcc;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(160, 130, 80, 0.08);
+}
+
+.post-toc-nav {
+  padding: 14px 16px;
+}
+
+.post-toc::-webkit-scrollbar {
+  display: none;
+}
+
+.post-toc-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b8a080;
+  margin: 0 0 10px;
+  padding-left: 2px;
+}
+
+.post-toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-toc-link {
+  display: block;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #8b7355;
+  text-decoration: none;
+  line-height: 1.6;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.post-toc-link:hover {
+  background: rgba(180, 140, 60, 0.1);
+  color: #6b5030;
+}
+
+.post-toc-level-3 {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.post-toc-active {
+  background: rgba(180, 140, 60, 0.15);
+  color: #6b5030;
+  font-weight: 600;
+}
+
+/* Dark mode TOC */
+.blog--dark .post-toc {
+  background: #2e2820;
+  border-color: #3d352a;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.blog--dark .post-toc-title {
+  color: #a09080;
+}
+
+.blog--dark .post-toc-link {
+  color: #b0a898;
+}
+
+.blog--dark .post-toc-link:hover {
+  background: rgba(200, 160, 80, 0.12);
+  color: #e0c890;
+}
+
+.blog--dark .post-toc-active {
+  background: rgba(200, 160, 80, 0.18);
+  color: #e0c890;
+}
+
+/* Hide TOC on small screens */
+@media (max-width: 1024px) {
+  .post-toc {
+    display: none;
+  }
 }
