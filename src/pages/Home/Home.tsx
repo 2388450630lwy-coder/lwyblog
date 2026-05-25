@@ -53,7 +53,7 @@ function Home() {
   const { posts } = usePosts();
   const stats = [
     { label: "文章", value: String(posts.length), emoji: "📝" },
-    { label: "标签", value: String(new Set(posts.map((p) => p.tag)).size), emoji: "🏷️" },
+    { label: "标签", value: String(new Set(posts.flatMap((p) => p.tags)).size), emoji: "🏷️" },
     { label: "来访者", value: "1.2k", emoji: "👣" },
     { label: "咖啡", value: "∞", emoji: "☕" },
   ];
@@ -155,7 +155,11 @@ function Home() {
               <Card color="app-green">
                 <div className="blog-post-card-inner">
                   <div className="blog-post-cover">{post.cover}</div>
-                  <span className="blog-post-tag">#{post.tag}</span>
+                  <div className="blog-post-tags">
+                    {post.tags.map((t) => (
+                      <span key={t} className="blog-post-tag">#{t}</span>
+                    ))}
+                  </div>
                   <h3 className="blog-post-title">{post.title}</h3>
                   <p className="blog-post-excerpt">
                     {post.excerpt.slice(0, 60)}...

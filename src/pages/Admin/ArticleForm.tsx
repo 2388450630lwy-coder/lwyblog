@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Input, Button } from "animal-island-ui";
-import type { Post, PostSection } from "../../data/posts";
+import { Input, Button, Select } from "animal-island-ui";
+import type { Post, PostSection, Category } from "../../data/posts";
+import { DEFAULT_CATEGORY_ID } from "../../data/posts";
 
 interface ArticleFormProps {
   initialData: Post | null;
+  categories: Category[];
   onSave: (data: Post | Omit<Post, "id">) => void;
   onCancel: () => void;
 }
@@ -47,9 +49,10 @@ function markdownToSections(md: string): PostSection[] {
   return sections.length > 0 ? sections : [{ heading: "", paragraphs: [""] }];
 }
 
-export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFormProps) {
+export default function ArticleForm({ initialData, categories, onSave, onCancel }: ArticleFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "");
-  const [tag, setTag] = useState(initialData?.tag ?? "");
+  const [categoryId, setCategoryId] = useState(initialData?.categoryId ?? DEFAULT_CATEGORY_ID);
+  const [tagsStr, setTagsStr] = useState(initialData?.tags?.join(", ") ?? "");
   const [date, setDate] = useState(initialData?.date ?? todayStr());
   const [cover, setCover] = useState(initialData?.cover ?? "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
@@ -65,7 +68,7 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
   function validate(): boolean {
     const e: Record<string, string> = {};
     if (!title.trim()) e.title = "标题不能为空";
-    if (!tag.trim()) e.tag = "标签不能为空";
+    if (!categoryId) e.categoryId = "请选择分类";
     const sections = markdownToSections(markdown);
     const hasContent = sections.some((s) => s.heading.trim() || s.paragraphs.some((p) => p.trim()));
     if (!hasContent) e.markdown = "正文不能为空";
@@ -77,9 +80,14 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
     if (!validate()) return;
     const cleanSections = markdownToSections(markdown);
     const cleanTakeaways = takeaways.map((t) => t.trim()).filter(Boolean);
+    const tags = tagsStr
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
     const base = {
       title: title.trim(),
-      tag: tag.trim(),
+      tags,
+      categoryId,
       date: date.trim() || todayStr(),
       cover: cover.trim(),
       excerpt: excerpt.trim(),
@@ -130,15 +138,14 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div>
           <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
-            标签 *
+            分类 *
           </label>
-          <Input
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            placeholder="如 React"
-            status={errors.tag ? "error" : undefined}
+          <Select
+            value={categoryId}
+            onChange={setCategoryId}
+            options={categories.map((c) => ({ label: c.name, key: c.id }))}
           />
-          {errors.tag && <div style={inlineErrorStyle}>{errors.tag}</div>}
+          {errors.categoryId && <div style={inlineErrorStyle}>{errors.categoryId}</div>}
         </div>
         <div>
           <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
@@ -150,6 +157,17 @@ export default function ArticleForm({ initialData, onSave, onCancel }: ArticleFo
             placeholder="如 🌸"
           />
         </div>
+      </div>
+
+      <div>
+        <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
+          标签
+        </label>
+        <Input
+          value={tagsStr}
+          onChange={(e) => setTagsStr(e.target.value)}
+          placeholder="多个标签用逗号分隔，如 React, TypeScript"
+        />
       </div>
 
       <div>

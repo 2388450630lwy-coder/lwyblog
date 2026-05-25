@@ -1,10 +1,11 @@
-import type { Post } from "../data/posts";
+import type { Post, Category } from "../data/posts";
 
 const STORAGE_KEY = "lwyblog-posts";
 
 export interface LocalStorageData {
   posts: Post[];
   deletedStaticIds: string[];
+  categories?: Category[];
 }
 
 export function loadLocalData(): LocalStorageData {

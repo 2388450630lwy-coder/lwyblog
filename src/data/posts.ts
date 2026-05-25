@@ -3,9 +3,15 @@ export interface PostSection {
   paragraphs: string[];
 }
 
+export interface Category {
+  id: string;
+  name: string;
+}
+
 export interface Post {
   id: string;
-  tag: string;
+  tags: string[];
+  categoryId?: string;
   title: string;
   date: string;
   cover: string;
@@ -14,10 +20,14 @@ export interface Post {
   takeaways: string[];
 }
 
+export const DEFAULT_CATEGORY_ID = "default";
+export const DEFAULT_CATEGORY_NAME = "默认分类";
+
 export const posts: Post[] = [
   {
     id: "1",
-    tag: "React",
+    tags: ["React"],
+    categoryId: "default",
     title: "使用 React 19 构建现代 Web 应用",
     date: "2026-05-20",
     cover: "🌸",
@@ -53,7 +63,8 @@ export const posts: Post[] = [
   },
   {
     id: "2",
-    tag: "TypeScript",
+    tags: ["TypeScript"],
+    categoryId: "default",
     title: "TypeScript 高级类型技巧",
     date: "2026-05-15",
     cover: "🍃",
@@ -82,7 +93,8 @@ export const posts: Post[] = [
   },
   {
     id: "3",
-    tag: "CSS",
+    tags: ["CSS"],
+    categoryId: "default",
     title: "现代 CSS 布局完全指南",
     date: "2026-05-10",
     cover: "🌺",

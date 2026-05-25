@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, Modal, Table, Select, Input } from "animal-island-ui";
 import type { TableColumn } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
-import type { Post } from "../../data/posts";
+import { useCategories } from "../../hooks/useCategories";
+import type { Post, Category } from "../../data/posts";
+import { DEFAULT_CATEGORY_ID } from "../../data/posts";
 import ArticleForm from "./ArticleForm";
 import "./Admin.less";
 
@@ -22,6 +24,7 @@ function setAuth() {
 export default function Admin() {
   const navigate = useNavigate();
   const { posts, addPost, updatePost, deletePost } = usePosts();
+  const { categories, addCategory, updateCategory, deleteCategory, getCategoryName } = useCategories();
   const dark = document.documentElement.classList.contains("dark");
 
   const [authed, setAuthed] = useState(getAuth);
@@ -33,17 +36,39 @@ export default function Admin() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
-  const [tagFilter, setTagFilter] = useState("全部");
+  const [categoryFilter, setCategoryFilter] = useState("全部");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const allTags = useMemo(
-    () => ["全部", ...new Set(posts.map((p) => p.tag))],
-    [posts]
+  // Category management state
+  const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [editingCatName, setEditingCatName] = useState("");
+  const [newCatName, setNewCatName] = useState("");
+  const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
+
+  const filterOptions = useMemo(
+    () => [
+      { label: "全部", key: "全部" },
+      ...categories.map((c) => ({ label: c.name, key: c.id })),
+    ],
+    [categories],
   );
 
-  const filteredPosts = useMemo(
-    () => (tagFilter === "全部" ? posts : posts.filter((p) => p.tag === tagFilter)),
-    [posts, tagFilter]
-  );
+  const filteredPosts = useMemo(() => {
+    let result = categoryFilter === "全部"
+      ? posts
+      : posts.filter((p) => p.categoryId === categoryFilter || (!p.categoryId && categoryFilter === DEFAULT_CATEGORY_ID));
+
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      result = result.filter((p) => {
+        if (p.title.toLowerCase().includes(q)) return true;
+        if (p.tags.some((t) => t.toLowerCase().includes(q))) return true;
+        if (getCategoryName(p.categoryId).toLowerCase().includes(q)) return true;
+        return false;
+      });
+    }
+    return result;
+  }, [posts, categoryFilter, searchQuery, getCategoryName]);
 
   function handleLogin() {
     if (username === ADMIN_USER && password === ADMIN_PASS) {
@@ -92,6 +117,27 @@ export default function Admin() {
     setEditingPost(null);
   }
 
+  // Category handlers
+  function startEditCat(cat: Category) {
+    setEditingCatId(cat.id);
+    setEditingCatName(cat.name);
+  }
+
+  function saveEditCat() {
+    if (editingCatId && editingCatName.trim()) {
+      updateCategory({ id: editingCatId, name: editingCatName.trim() });
+    }
+    setEditingCatId(null);
+    setEditingCatName("");
+  }
+
+  function handleAddCategory() {
+    if (newCatName.trim()) {
+      addCategory(newCatName.trim());
+      setNewCatName("");
+    }
+  }
+
   const columns: TableColumn[] = [
     {
       title: "标题",
@@ -102,12 +148,30 @@ export default function Admin() {
       ),
     },
     {
+      title: "分类",
+      dataIndex: "categoryId" as keyof Post,
+      width: "12%",
+      render: (_value: unknown, record: unknown) => {
+        const post = record as Post;
+        return (
+          <span className="admin-tag-pill">{getCategoryName(post.categoryId)}</span>
+        );
+      },
+    },
+    {
       title: "标签",
-      dataIndex: "tag" as keyof Post,
-      width: "15%",
-      render: (value: unknown) => (
-        <span className="admin-tag-pill">{String(value)}</span>
-      ),
+      dataIndex: "tags" as keyof Post,
+      width: "18%",
+      render: (_value: unknown, record: unknown) => {
+        const post = record as Post;
+        return (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {post.tags.map((t) => (
+              <span key={t} className="admin-tag-pill">#{t}</span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       title: "日期",
@@ -194,20 +258,36 @@ export default function Admin() {
       }}
     >
       <div className="admin-toolbar">
-        <Button type="primary" onClick={() => {
-          sessionStorage.removeItem(AUTH_KEY);
-          setAuthed(false);
-        }}>
-          退出登录
-        </Button>
-        <Button type="primary" onClick={handleCreate}>
-          + 新建文章
-        </Button>
-        <Select
-          value={tagFilter}
-          onChange={setTagFilter}
-          options={allTags.map((t) => ({ label: t, key: t }))}
-        />
+        <div className="admin-toolbar-row">
+          <Button type="primary" onClick={() => {
+            sessionStorage.removeItem(AUTH_KEY);
+            setAuthed(false);
+          }}>
+            退出登录
+          </Button>
+          <Button type="primary" onClick={handleCreate}>
+            + 新建文章
+          </Button>
+        </div>
+        <div className="admin-toolbar-row">
+          <div className="admin-filter-group">
+            <span className="admin-filter-label">筛选</span>
+            <div className="admin-search-input">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索文章标题、分类、标签..."
+              />
+            </div>
+            <div className="admin-filter-select">
+              <Select
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                options={filterOptions}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <Card color="app-green">
@@ -216,12 +296,91 @@ export default function Admin() {
           dataSource={filteredPosts as unknown as Record<string, unknown>[]}
           rowKey="id"
           emptyText={
-            tagFilter !== "全部"
-              ? "该标签下暂无文章"
-              : "还没有文章，点击「新建文章」开始创作吧！"
+            searchQuery.trim()
+              ? "没有匹配的文章"
+              : categoryFilter !== "全部"
+                ? "该分类下暂无文章"
+                : "还没有文章，点击「新建文章」开始创作吧！"
           }
         />
       </Card>
+
+      {/* Category Management */}
+      <Card color="app-green">
+        <div style={{ padding: 4 }}>
+          <h3 style={{ margin: "0 0 14px", fontSize: 16 }}>分类管理</h3>
+
+          {/* Add new category */}
+          <div className="admin-cat-add">
+            <Input
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              placeholder="新分类名称"
+              onKeyDown={(e) => { if (e.key === "Enter") handleAddCategory(); }}
+            />
+            <Button type="primary" onClick={handleAddCategory}>
+              添加
+            </Button>
+          </div>
+
+          {/* Category list */}
+          <div className="admin-cat-list">
+            {categories.map((cat) => (
+              <div key={cat.id} className="admin-cat-row">
+                {editingCatId === cat.id ? (
+                  <>
+                    <Input
+                      value={editingCatName}
+                      onChange={(e) => setEditingCatName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveEditCat();
+                        if (e.key === "Escape") setEditingCatId(null);
+                      }}
+                    />
+                    <Button type="primary" onClick={saveEditCat}>
+                      保存
+                    </Button>
+                    <Button onClick={() => setEditingCatId(null)}>
+                      取消
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="admin-cat-name">{cat.name}</span>
+                    <div className="admin-cat-actions">
+                      <Button type="text" onClick={() => startEditCat(cat)}>
+                        编辑
+                      </Button>
+                      {cat.id !== DEFAULT_CATEGORY_ID && (
+                        <Button type="text" onClick={() => setCatDeleteConfirm(cat)}>
+                          删除
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Category Delete Modal */}
+      <Modal
+        open={!!catDeleteConfirm}
+        onClose={() => setCatDeleteConfirm(null)}
+        onOk={() => {
+          if (catDeleteConfirm) {
+            deleteCategory(catDeleteConfirm.id);
+            setCatDeleteConfirm(null);
+          }
+        }}
+        title="确认删除分类"
+      >
+        <p style={{ padding: 16, color: "#666" }}>
+          确定要删除分类「{catDeleteConfirm?.name}」吗？已有文章将显示为"未分类"。
+        </p>
+      </Modal>
 
       {/* Create/Edit Modal */}
       <Modal
@@ -236,6 +395,7 @@ export default function Admin() {
       >
         <ArticleForm
           initialData={editingPost}
+          categories={categories}
           onSave={handleSave}
           onCancel={() => {
             setFormOpen(false);

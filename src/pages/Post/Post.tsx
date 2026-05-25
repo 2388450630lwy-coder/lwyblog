@@ -161,7 +161,9 @@ function Post() {
               fontSize: 13,
             }}
           >
-            #{post.tag}
+            {post.tags.map((t) => (
+              <span key={t} style={{ margin: "0 4px" }}>#{t}</span>
+            ))}
           </span>
           <h1 style={{ margin: "12px 0", fontSize: 28 }}>{post.title}</h1>
           <div style={{ color: "#888", fontSize: 14 }}>
