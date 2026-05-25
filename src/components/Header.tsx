@@ -1,18 +1,14 @@
-import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Switch } from "animal-island-ui";
 
-export default function Header() {
+interface HeaderProps {
+  dark: boolean;
+  onThemeChange: (checked: boolean) => void;
+}
+
+export default function Header({ dark, onThemeChange }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem("lwyblog-dark") === "1";
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("lwyblog-dark", dark ? "1" : "0");
-  }, [dark]);
 
   return (
     <header
@@ -63,7 +59,7 @@ export default function Header() {
         </Button>
         <Switch
           checked={dark}
-          onChange={setDark}
+          onChange={onThemeChange}
           checkedChildren="🌙"
           unCheckedChildren="☀️"
         />
