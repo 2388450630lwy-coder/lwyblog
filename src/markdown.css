@@ -189,6 +189,49 @@
 
 /* === Post layout with TOC sidebar === */
 
+/* Loading bar — custom progress indicator that respects light/dark mode */
+.post-loading-bar {
+  width: 100%;
+  height: 3px;
+  margin-bottom: 16px;
+  border-radius: 2px;
+  background: rgba(25, 200, 185, 0.15);
+  overflow: hidden;
+  position: relative;
+}
+
+.post-loading-bar__track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #19c8b9, #86d67a, #d98c3b);
+  animation: post-loading-slide 1.2s ease-in-out infinite;
+}
+
+/* Dark mode loading bar */
+.post-loading-bar--dark {
+  background: rgba(200, 160, 80, 0.12);
+}
+
+.post-loading-bar--dark .post-loading-bar__track {
+  background: linear-gradient(90deg, #e0c890, #d98c3b, #c08040);
+}
+
+@keyframes post-loading-slide {
+  0% {
+    left: -40%;
+  }
+  50% {
+    left: 60%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 .post-layout {
   max-width: 800px;
   margin: 0 auto;

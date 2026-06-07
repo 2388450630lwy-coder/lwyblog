@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Divider, Footer, Loading } from "animal-island-ui";
+import { Card, Button, Divider, Footer } from "animal-island-ui";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import { usePosts } from "../../hooks/usePosts";
@@ -229,7 +229,11 @@ function Post() {
         minHeight: "100vh",
       }}
     >
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className={dark ? "post-loading-bar post-loading-bar--dark" : "post-loading-bar"}>
+          <div className="post-loading-bar__track" />
+        </div>
+      )}
 
       {/* TOC Sidebar — fixed on the left, aligned with header */}
       {tocItems.length > 0 && (

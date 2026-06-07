@@ -252,9 +252,7 @@ function Home() {
         title="🌿 欢迎来到无人岛"
       >
         <div className="blog-modal-text">
-          <Typewriter speed={60}>
-            <span className="blog-modal-title">欢迎来到我的小岛！</span>
-          </Typewriter>
+          <span className="blog-modal-title">欢迎来到我的小岛！</span>
           <p className="blog-modal-desc">
             这里记录着我的技术探索和日常思考。
             <br />
