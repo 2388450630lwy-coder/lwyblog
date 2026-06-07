@@ -57,6 +57,40 @@ export default function Admin() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newCatName, setNewCatName] = useState("");
   const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
+  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "social">("posts");
+
+  // Social media state
+  const SOCIAL_KEY = "lwyblog-social";
+  const [github, setGithub] = useState("");
+  const [email, setEmailSocial] = useState("");
+  const [weibo, setWeibo] = useState("");
+  const [bilibili, setBilibili] = useState("");
+
+  // Save social media data to localStorage
+  const saveSocial = () => {
+    localStorage.setItem(SOCIAL_KEY, JSON.stringify({
+      github: github.trim(),
+      email: email.trim(),
+      weibo: weibo.trim(),
+      bilibili: bilibili.trim(),
+    }));
+  };
+
+  // Load social data when authenticated
+  useEffect(() => {
+    if (authed) {
+      try {
+        const raw = localStorage.getItem(SOCIAL_KEY);
+        if (raw) {
+          const data = JSON.parse(raw);
+          setGithub(data.github || "");
+          setEmailSocial(data.email || "");
+          setWeibo(data.weibo || "");
+          setBilibili(data.bilibili || "");
+        }
+      } catch { /* ignore */ }
+    }
+  }, [authed]);
 
   const filterOptions = useMemo(
     () => [
@@ -151,6 +185,11 @@ export default function Admin() {
     }
   }
 
+  const tagCount = useMemo(
+    () => new Set(posts.flatMap((p) => p.tags)).size,
+    [posts],
+  );
+
   const columns: TableColumn[] = [
     {
       title: "标题",
@@ -221,13 +260,15 @@ export default function Admin() {
           background: dark ? "#2a241a" : "transparent",
           color: dark ? "#f3e9d2" : "#3b2f22",
           minHeight: "100vh",
+          display: "flex",
         }}
       >
         <div className="admin-login">
           <Card color="app-green">
             <div style={{ padding: 40, textAlign: "center", maxWidth: 360, margin: "0 auto" }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🔐</div>
-              <h2 style={{ margin: "0 0 20px" }}>管理后台登录</h2>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
+              <h2 style={{ margin: "0 0 8px" }}>管理后台</h2>
+              <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.6 }}>LWY's Island</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <Input
                   value={username}
@@ -250,7 +291,7 @@ export default function Admin() {
               </div>
               <div style={{ marginTop: 16 }}>
                 <Button type="text" onClick={() => navigate("/")}>
-                  ← 返回博客
+                  返回博客
                 </Button>
               </div>
             </div>
@@ -260,6 +301,12 @@ export default function Admin() {
     );
   }
 
+  const sidebarItems = [
+    { key: "posts" as const, label: "文章管理", icon: "📝" },
+    { key: "categories" as const, label: "分类管理", icon: "📂" },
+    { key: "social" as const, label: "社媒信息", icon: "🔗" },
+  ];
+
   // ----- Admin panel -----
   return (
     <div
@@ -268,117 +315,184 @@ export default function Admin() {
         background: dark ? "#2a241a" : "transparent",
         color: dark ? "#f3e9d2" : "#3b2f22",
         minHeight: "100vh",
+        display: "flex",
       }}
     >
-      <div className="admin-toolbar">
-        <div className="admin-toolbar-row">
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-brand" onClick={() => navigate("/")}>
+          <span className="admin-sidebar-logo">🌿</span>
+          <span className="admin-sidebar-name">LWY's Island</span>
+        </div>
+        <nav className="admin-sidebar-nav">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              className={`admin-sidebar-item ${adminTab === item.key ? "admin-sidebar-item--active" : ""}`}
+              onClick={() => setAdminTab(item.key)}
+            >
+              <span className="admin-sidebar-item-icon">{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="admin-sidebar-footer">
+          <Button type="text" onClick={() => navigate("/")}>
+            返回博客
+          </Button>
           <Button type="primary" onClick={() => {
             sessionStorage.removeItem(AUTH_KEY);
             setAuthed(false);
           }}>
             退出登录
           </Button>
-          <Button type="primary" onClick={handleCreate}>
-            + 新建文章
-          </Button>
         </div>
-        <div className="admin-toolbar-row">
-          <div className="admin-filter-group">
-            <span className="admin-filter-label">筛选</span>
-            <div className="admin-search-input">
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索文章标题、分类、标签..."
-              />
-            </div>
-            <div className="admin-filter-select">
-              <Select
-                value={categoryFilter}
-                onChange={setCategoryFilter}
-                options={filterOptions}
-              />
-            </div>
-          </div>
+      </aside>
+
+      {/* Main */}
+      <main className="admin-main">
+        {/* Stats bar */}
+        <div className="admin-stats-bar">
+          <span>📝 {posts.length} 篇文章</span>
+          <span>📂 {categories.length} 个分类</span>
+          <span>🏷️ {tagCount} 个标签</span>
         </div>
-      </div>
 
-      <Card color="app-green">
-        <Table
-          columns={columns}
-          dataSource={filteredPosts as unknown as Record<string, unknown>[]}
-          rowKey="id"
-          emptyText={
-            searchQuery.trim()
-              ? "没有匹配的文章"
-              : categoryFilter !== "全部"
-                ? "该分类下暂无文章"
-                : "还没有文章，点击「新建文章」开始创作吧！"
-          }
-        />
-      </Card>
-
-      {/* Category Management */}
-      <Card color="app-green">
-        <div style={{ padding: 4 }}>
-          <h3 style={{ margin: "0 0 14px", fontSize: 16 }}>分类管理</h3>
-
-          {/* Add new category */}
-          <div className="admin-cat-add">
-            <Input
-              value={newCatName}
-              onChange={(e) => setNewCatName(e.target.value)}
-              placeholder="新分类名称"
-              onKeyDown={(e) => { if (e.key === "Enter") handleAddCategory(); }}
-            />
-            <Button type="primary" onClick={handleAddCategory}>
-              添加
-            </Button>
-          </div>
-
-          {/* Category list */}
-          <div className="admin-cat-list">
-            {categories.map((cat) => (
-              <div key={cat.id} className="admin-cat-row">
-                {editingCatId === cat.id ? (
-                  <>
-                    <Input
-                      value={editingCatName}
-                      onChange={(e) => setEditingCatName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") saveEditCat();
-                        if (e.key === "Escape") setEditingCatId(null);
-                      }}
-                    />
-                    <Button type="primary" onClick={saveEditCat}>
-                      保存
-                    </Button>
-                    <Button onClick={() => setEditingCatId(null)}>
-                      取消
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <span className="admin-cat-name">{cat.name}</span>
-                    <div className="admin-cat-actions">
-                      <Button type="text" onClick={() => startEditCat(cat)}>
-                        编辑
-                      </Button>
-                      {cat.id !== DEFAULT_CATEGORY_ID && (
-                        <Button type="text" onClick={() => setCatDeleteConfirm(cat)}>
-                          删除
-                        </Button>
-                      )}
-                    </div>
-                  </>
-                )}
+        {/* Posts Tab */}
+        {adminTab === "posts" && (
+          <>
+            <div className="admin-toolbar">
+              <Button type="primary" onClick={handleCreate}>
+                + 新建文章
+              </Button>
+              <div className="admin-filter-group">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜索标题、标签..."
+                />
+                <div className="admin-filter-select">
+                  <Select
+                    value={categoryFilter}
+                    onChange={setCategoryFilter}
+                    options={filterOptions}
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+            </div>
+            <Card color="app-green">
+              <Table
+                columns={columns}
+                dataSource={filteredPosts as unknown as Record<string, unknown>[]}
+                rowKey="id"
+                emptyText={
+                  searchQuery.trim()
+                    ? "没有匹配的文章"
+                    : categoryFilter !== "全部"
+                      ? "该分类下暂无文章"
+                      : "还没有文章，点击「新建文章」开始创作吧！"
+                }
+              />
+            </Card>
+          </>
+        )}
 
-      {/* Category Delete Modal */}
+        {/* Categories Tab */}
+        {adminTab === "categories" && (
+          <Card color="app-green">
+            <div className="admin-card-inner">
+              <h3>📂 分类管理</h3>
+              <div className="admin-cat-add">
+                <Input
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  placeholder="新分类名称"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAddCategory(); }}
+                />
+                <Button type="primary" onClick={handleAddCategory}>添加</Button>
+              </div>
+              <div className="admin-cat-list">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="admin-cat-row">
+                    {editingCatId === cat.id ? (
+                      <>
+                        <Input
+                          value={editingCatName}
+                          onChange={(e) => setEditingCatName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEditCat();
+                            if (e.key === "Escape") setEditingCatId(null);
+                          }}
+                        />
+                        <Button type="primary" onClick={saveEditCat}>保存</Button>
+                        <Button onClick={() => setEditingCatId(null)}>取消</Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="admin-cat-name">{cat.name}</span>
+                        <div className="admin-cat-actions">
+                          <Button type="text" onClick={() => startEditCat(cat)}>编辑</Button>
+                          {cat.id !== DEFAULT_CATEGORY_ID && (
+                            <Button type="text" onClick={() => setCatDeleteConfirm(cat)}>删除</Button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Social Tab */}
+        {adminTab === "social" && (
+          <Card color="app-green">
+            <div className="admin-card-inner">
+              <h3>🔗 社媒信息</h3>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>GitHub</label>
+                  <Input
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
+                    placeholder="https://github.com/xxx"
+                  />
+                </div>
+                <div className="admin-social-row">
+                  <label>邮箱</label>
+                  <Input
+                    value={email}
+                    onChange={(e) => setEmailSocial(e.target.value)}
+                    placeholder="xxx@email.com"
+                  />
+                </div>
+                <div className="admin-social-row">
+                  <label>微博</label>
+                  <Input
+                    value={weibo}
+                    onChange={(e) => setWeibo(e.target.value)}
+                    placeholder="微博链接或昵称"
+                  />
+                </div>
+                <div className="admin-social-row">
+                  <label>Bilibili</label>
+                  <Input
+                    value={bilibili}
+                    onChange={(e) => setBilibili(e.target.value)}
+                    placeholder="B站链接或昵称"
+                  />
+                </div>
+              </div>
+              <div className="admin-social-save">
+                <Button type="primary" onClick={saveSocial}>保存</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+      </main>
+
+      {/* Modals */}
       <Modal
         open={!!catDeleteConfirm}
         onClose={() => setCatDeleteConfirm(null)}
@@ -395,13 +509,9 @@ export default function Admin() {
         </p>
       </Modal>
 
-      {/* Create/Edit Modal */}
       <Modal
         open={formOpen}
-        onClose={() => {
-          setFormOpen(false);
-          setEditingPost(null);
-        }}
+        onClose={() => { setFormOpen(false); setEditingPost(null); }}
         title={editingPost ? "编辑文章" : "新建文章"}
         footer={null}
         width={700}
@@ -410,14 +520,10 @@ export default function Admin() {
           initialData={editingPost}
           categories={categories}
           onSave={handleSave}
-          onCancel={() => {
-            setFormOpen(false);
-            setEditingPost(null);
-          }}
+          onCancel={() => { setFormOpen(false); setEditingPost(null); }}
         />
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}

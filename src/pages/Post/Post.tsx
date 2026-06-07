@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Divider, Footer } from "animal-island-ui";
+import { Card, Button, Divider } from "animal-island-ui";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import { usePosts } from "../../hooks/usePosts";
@@ -208,7 +208,7 @@ function Post() {
     return (
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", textAlign: "center" }}>
         <Button type="text" onClick={() => navigate("/")}>
-          ← 返回首页
+          返回首页
         </Button>
         <Card color="app-pink">
           <div style={{ padding: 40 }}>
@@ -226,7 +226,6 @@ function Post() {
       style={{
         color: dark ? "#f3e9d2" : "#444",
         background: dark ? "#2a241a" : "transparent",
-        minHeight: "100vh",
       }}
     >
       {isLoading && (
@@ -265,7 +264,7 @@ function Post() {
           {/* Back button */}
           <div style={{ padding: "20px 0" }}>
             <Button type="text" onClick={() => navigate("/")}>
-              ← 文章一覧に戻る
+              返回文章列表
             </Button>
           </div>
 
@@ -340,23 +339,20 @@ function Post() {
           >
             {prevPost ? (
               <Button onClick={() => navigate(`/posts/${prevPost.id}`)}>
-                ← {prevPost.title}
+                {prevPost.title}
               </Button>
             ) : (
               <div />
             )}
             {nextPost ? (
               <Button onClick={() => navigate(`/posts/${nextPost.id}`)}>
-                {nextPost.title} →
+                {nextPost.title}
               </Button>
             ) : (
               <div />
             )}
           </div>
 
-          <div style={{ marginTop: 40 }}>
-            <Footer type="sea" />
-          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,214 @@
+.archive {
+  width: 100%;
+}
+
+.archive-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px 0;
+}
+
+.archive-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+.archive-subtitle {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.6;
+  margin: 0 0 36px;
+}
+
+/* Timeline */
+.archive-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+/* Vertical line — runs along the left */
+.archive-timeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: rgba(180, 140, 60, 0.25);
+}
+
+/* Year */
+.archive-year-group {
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.archive-year-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.archive-year-marker {
+  position: absolute;
+  left: -33px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d98c3b;
+  border: 2px solid #fdfaf3;
+  box-shadow: 0 0 0 3px rgba(217, 140, 59, 0.25);
+  z-index: 1;
+}
+
+.archive-year {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.archive-year-count {
+  font-size: 13px;
+  opacity: 0.5;
+}
+
+/* Months */
+.archive-months {
+  position: relative;
+}
+
+.archive-month-row {
+  margin-bottom: 18px;
+}
+
+.archive-month-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.archive-month-dot {
+  position: absolute;
+  left: -33px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(180, 140, 60, 0.5);
+  z-index: 1;
+}
+
+.archive-month-name {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.archive-month-count {
+  font-size: 12px;
+  opacity: 0.4;
+}
+
+/* Post links — lighter style, no Card wrapper */
+.archive-month-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 4px;
+}
+
+.archive-post-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.archive-post-link:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateX(4px);
+}
+
+.archive-post-cover {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.archive-post-date {
+  font-size: 12px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.archive-post-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Dark mode */
+.archive--dark .archive-timeline::before {
+  background: rgba(200, 160, 80, 0.2);
+}
+
+.archive--dark .archive-year-marker {
+  border-color: #2a241a;
+}
+
+.archive--dark .archive-month-dot {
+  background: rgba(200, 160, 80, 0.5);
+}
+
+.archive--dark .archive-post-link {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.archive--dark .archive-post-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 768px) {
+  .archive-timeline {
+    padding-left: 20px;
+  }
+
+  .archive-year-marker {
+    left: -25px;
+    width: 10px;
+    height: 10px;
+  }
+
+  .archive-month-dot {
+    left: -25px;
+    width: 6px;
+    height: 6px;
+  }
+
+  .archive-post-link {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .archive-post-date {
+    width: auto;
+  }
+
+  .archive-post-title {
+    width: 100%;
+  }
+}

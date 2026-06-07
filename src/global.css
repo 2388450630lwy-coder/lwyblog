@@ -24,3 +24,8 @@ html.dark .admin {
 html.dark .admin-title {
   color: #f3e9d2;
 }
+
+/* Force footer wave to fill full width */
+.app-footer [class^="animal-footer"] {
+  background-size: 100% auto !important;
+}

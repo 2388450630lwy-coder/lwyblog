@@ -6,7 +6,6 @@ import {
   Modal,
   Typewriter,
   Collapse,
-  Footer,
   Divider,
   Input,
   Switch,
@@ -240,9 +239,6 @@ function Home() {
       </section>
 
       <Divider type="wave-yellow" />
-
-      {/* Footer */}
-      <Footer type="sea" />
 
       {/* Welcome Modal */}
       <Modal
