@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Input, Button, Select } from "animal-island-ui";
+import { useState, useRef, useEffect } from "react";
+import { Input, Button, Select, Modal } from "animal-island-ui";
 import type { Post, PostSection, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID } from "../../data/posts";
+import { loadImages, saveImages, deleteImage, compressImage, type StoredImage } from "../../utils/images";
 
 interface ArticleFormProps {
   initialData: Post | null;
@@ -64,6 +65,51 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Image modal
+  const [imgModalOpen, setImgModalOpen] = useState(false);
+  const [imgUrl, setImgUrl] = useState("");
+  const [images, setImages] = useState<StoredImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (imgModalOpen) setImages(loadImages());
+  }, [imgModalOpen]);
+
+  function insertImage(url: string, imgId?: string) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    // Use short reference for base64, raw URL for external links
+    const ref = imgId ? `@img/${imgId}` : url;
+    const text = `![image](${ref})`;
+    const newVal = markdown.slice(0, start) + text + markdown.slice(end);
+    setMarkdown(newVal);
+    // Restore cursor after inserted text
+    setTimeout(() => {
+      ta.focus();
+      ta.selectionStart = ta.selectionEnd = start + text.length;
+    }, 0);
+    setImgModalOpen(false);
+    setImgUrl("");
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const stored = await compressImage(file);
+    const updated = [...images, stored];
+    saveImages(updated);
+    setImages(updated);
+    insertImage(stored.dataUrl, stored.id);
+  }
+
+  function handleDeleteImg(id: string) {
+    const updated = deleteImage(id);
+    setImages(updated);
+  }
 
   function validate(): boolean {
     const e: Record<string, string> = {};
@@ -200,14 +246,20 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
           padding: 14,
         }}
       >
-        <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
-          正文 (Markdown) *
-        </label>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <label style={{ fontWeight: 700, fontSize: 14 }}>
+            正文 (Markdown) *
+          </label>
+          <Button type="text" onClick={() => setImgModalOpen(true)}>
+            📷 插入图片
+          </Button>
+        </div>
         <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px" }}>
           用 <code>## 小标题</code> 分隔段落，空行分隔段落
         </p>
         {errors.markdown && <div style={inlineErrorStyle}>{errors.markdown}</div>}
         <textarea
+          ref={textareaRef}
           value={markdown}
           onChange={(e) => setMarkdown(e.target.value)}
           rows={18}
@@ -263,6 +315,95 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
           {initialData ? "保存修改" : "创建文章"}
         </Button>
       </div>
+
+      {/* Image Modal */}
+      <Modal
+        open={imgModalOpen}
+        onClose={() => { setImgModalOpen(false); setImgUrl(""); }}
+        title="📷 插入图片"
+        footer={null}
+      >
+        <div style={{ padding: "8px 0" }}>
+          {/* Upload */}
+          <div style={{ marginBottom: 16 }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
+            <Button onClick={() => fileInputRef.current?.click()}>
+              选择本地图片（自动压缩）
+            </Button>
+          </div>
+
+          {/* URL input */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, opacity: 0.6 }}>
+              或粘贴图片 URL
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Input
+                value={imgUrl}
+                onChange={(e) => setImgUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                onKeyDown={(e) => { if (e.key === "Enter" && imgUrl.trim()) insertImage(imgUrl.trim()); }}
+              />
+              <Button
+                type="primary"
+                onClick={() => imgUrl.trim() && insertImage(imgUrl.trim())}
+              >
+                插入
+              </Button>
+            </div>
+          </div>
+
+          {/* Uploaded list */}
+          {images.length > 0 && (
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, opacity: 0.6 }}>
+                已上传（共 {images.length} 张，点击插入）
+              </div>
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                {images.map((img) => (
+                  <div
+                    key={img.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "6px 0",
+                      borderBottom: "1px solid rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <img
+                      src={img.dataUrl}
+                      alt=""
+                      style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", cursor: "pointer" }}
+                      onClick={() => insertImage(img.dataUrl, img.id)}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {img.name}
+                      </div>
+                      <div style={{ fontSize: 11, opacity: 0.5 }}>{img.date}</div>
+                    </div>
+                    <Button type="text" onClick={() => {
+                      navigator.clipboard.writeText(img.dataUrl);
+                    }}>
+                      复制
+                    </Button>
+                    <Button type="text" onClick={() => handleDeleteImg(img.id)}>
+                      删除
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

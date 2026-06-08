@@ -4,6 +4,7 @@ import { Card, Button, Divider } from "animal-island-ui";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import { usePosts } from "../../hooks/usePosts";
+import { loadImages } from "../../utils/images";
 import "../../markdown.css";
 import "highlight.js/styles/atom-one-dark.css";
 import type { PostSection } from "../../data/posts";
@@ -112,7 +113,17 @@ function Post() {
   // Build HTML with heading IDs baked in — runs synchronously, no timing issues
   const { htmlBody, tocItems } = useMemo(() => {
     if (!post) return { htmlBody: "", tocItems: [] as TocItem[] };
-    const raw = buildHtml(sectionsToMarkdown(post.sections));
+    let md = sectionsToMarkdown(post.sections);
+    // Resolve @img/{id} short references to base64 data URLs
+    const images = loadImages();
+    if (images.length > 0) {
+      const map = new Map(images.map((img) => [img.id, img.dataUrl]));
+      md = md.replace(/!\[([^\]]*)\]\(@img\/([^)]+)\)/g, (_, alt, id) => {
+        const url = map.get(id);
+        return url ? `![${alt}](${url})` : `![${alt}](missing:${id})`;
+      });
+    }
+    const raw = buildHtml(md);
     const result = injectHeadingIds(raw);
     return { htmlBody: result.html, tocItems: result.toc };
   }, [post]);

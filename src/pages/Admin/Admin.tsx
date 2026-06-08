@@ -7,6 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID } from "../../data/posts";
 import ArticleForm from "./ArticleForm";
+import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
 import "./Admin.less";
 
 const ADMIN_USER = "lwy";
@@ -57,7 +58,7 @@ export default function Admin() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newCatName, setNewCatName] = useState("");
   const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
-  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "social">("posts");
+  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social">("posts");
 
   // Social media state
   const SOCIAL_KEY = "lwyblog-social";
@@ -65,6 +66,11 @@ export default function Admin() {
   const [email, setEmailSocial] = useState("");
   const [weibo, setWeibo] = useState("");
   const [bilibili, setBilibili] = useState("");
+
+  // Image management state
+  const [imageList, setImageList] = useState<StoredImage[]>([]);
+
+  const refreshImages = () => setImageList(loadImages());
 
   // Save social media data to localStorage
   const saveSocial = () => {
@@ -75,6 +81,11 @@ export default function Admin() {
       bilibili: bilibili.trim(),
     }));
   };
+
+  // Load images when switching to images tab
+  useEffect(() => {
+    if (adminTab === "images") refreshImages();
+  }, [adminTab]);
 
   // Load social data when authenticated
   useEffect(() => {
@@ -304,6 +315,7 @@ export default function Admin() {
   const sidebarItems = [
     { key: "posts" as const, label: "文章管理", icon: "📝" },
     { key: "categories" as const, label: "分类管理", icon: "📂" },
+    { key: "images" as const, label: "图片管理", icon: "🖼" },
     { key: "social" as const, label: "社媒信息", icon: "🔗" },
   ];
 
@@ -441,6 +453,60 @@ export default function Admin() {
                   </div>
                 ))}
               </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Images Tab */}
+        {adminTab === "images" && (
+          <Card color="app-green">
+            <div className="admin-card-inner">
+              <h3>🖼 图片管理</h3>
+              <p style={{ fontSize: 13, opacity: 0.6, margin: "0 0 16px" }}>
+                共 {imageList.length} 张图片 · 存储在浏览器本地
+              </p>
+              {imageList.length === 0 ? (
+                <p style={{ textAlign: "center", color: "#999", padding: 32 }}>
+                  还没有上传图片。在编辑文章时点击「📷 插入图片」即可上传。
+                </p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {imageList.map((img) => (
+                    <div
+                      key={img.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "10px 14px",
+                        borderRadius: 12,
+                        background: "rgba(255,255,255,0.5)",
+                      }}
+                    >
+                      <img
+                        src={img.dataUrl}
+                        alt={img.name}
+                        style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover" }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.name}</div>
+                        <div style={{ fontSize: 12, opacity: 0.5, marginTop: 2 }}>
+                          {img.date} · 引用：<code>@img/{img.id}</code>
+                        </div>
+                      </div>
+                      <Button type="text" onClick={() => navigator.clipboard.writeText(`![image](@img/${img.id})`)}>
+                        复制
+                      </Button>
+                      <Button type="text" onClick={() => {
+                        deleteImage(img.id);
+                        refreshImages();
+                      }}>
+                        删除
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
         )}
