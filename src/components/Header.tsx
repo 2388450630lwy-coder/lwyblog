@@ -57,6 +57,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
           padding: "0 20px",
           marginBottom: 24,
           maxWidth: 960,
+          width: "100%",
           margin: "0 auto 24px",
           background: dark
             ? "linear-gradient(135deg, #3a3125 0%, #2b2418 100%)"
