@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { Cursor, Loading, Footer } from "animal-island-ui";
 import "animal-island-ui/style";
@@ -20,7 +20,7 @@ function SiIcon({ path, color }: { path: string; color: string }) {
   );
 }
 
-const SOCIAL_ICONS: Record<string, (color: string) => JSX.Element> = {
+const SOCIAL_ICONS: Record<string, (color: string) => React.ReactNode> = {
   github: (c) => <SiIcon path={siGithub.path} color={c}/>,
   email: (c) => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
