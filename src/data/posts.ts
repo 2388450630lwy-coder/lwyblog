@@ -15,6 +15,7 @@ export interface Post {
   title: string;
   date: string;
   cover: string;
+  coverImage?: string;
   excerpt: string;
   sections: PostSection[];
   takeaways: string[];
