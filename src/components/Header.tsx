@@ -48,7 +48,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
 
   // Highlight matching text
   function highlightText(text: string, query: string) {
-    if (!query.trim()) return text;
+    if (!query.trim()) return [{ text, highlight: false, key: 0 }];
     const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const parts = text.split(new RegExp(`(${escaped})`, "gi"));
     return parts.map((part, i) =>
