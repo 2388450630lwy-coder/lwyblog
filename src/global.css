@@ -29,3 +29,14 @@ html.dark .admin-title {
 .app-footer [class^="animal-footer"] {
   background-size: 100% auto !important;
 }
+
+/* Mobile header */
+@media (max-width: 768px) {
+  .header-nav-desktop {
+    display: none !important;
+  }
+
+  .header-mobile-btn {
+    display: block !important;
+  }
+}

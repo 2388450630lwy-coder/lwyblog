@@ -130,7 +130,31 @@ function Post() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [activeId, setActiveId] = useState("");
+  const [zoomedImg, setZoomedImg] = useState<string | null>(null);
+  const [mobileTocOpen, setMobileTocOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showBackTop, setShowBackTop] = useState(false);
   const isFirstLoad = useRef(true);
+
+  // Scroll: progress bar + back-to-top visibility
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const st = window.scrollY;
+        const ch = document.documentElement.scrollHeight - window.innerHeight;
+        setScrollProgress(ch > 0 ? Math.round((st / ch) * 100) : 0);
+        setShowBackTop(st > 400);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
   const contentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -208,12 +232,24 @@ function Post() {
     }).catch(() => {});
   }, []);
 
+  // Image zoom handler
+  const handleImageClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "IMG") {
+      setZoomedImg((target as HTMLImageElement).src);
+    }
+  }, []);
+
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
     el.addEventListener("click", handleCopy);
-    return () => el.removeEventListener("click", handleCopy);
-  }, [handleCopy]);
+    el.addEventListener("click", handleImageClick);
+    return () => {
+      el.removeEventListener("click", handleCopy);
+      el.removeEventListener("click", handleImageClick);
+    };
+  }, [handleCopy, handleImageClick]);
 
   if (!post) {
     return (
@@ -239,6 +275,21 @@ function Post() {
         background: dark ? "#2a241a" : "transparent",
       }}
     >
+      {/* Reading progress bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          height: 3,
+          width: `${scrollProgress}%`,
+          zIndex: 100,
+          background: "linear-gradient(90deg, #19c8b9, #86d67a)",
+          borderRadius: "0 2px 2px 0",
+          transition: "width 0.15s linear",
+        }}
+      />
+
       {isLoading && (
         <div className={dark ? "post-loading-bar post-loading-bar--dark" : "post-loading-bar"}>
           <div className="post-loading-bar__track" />
@@ -322,7 +373,6 @@ function Post() {
             ref={contentRef}
             className="blog-post-content"
             dangerouslySetInnerHTML={{ __html: htmlBody }}
-            style={{ fontSize: 16, lineHeight: 1.9, color: "#444" }}
           />
 
           {/* Takeaways */}
@@ -349,23 +399,246 @@ function Post() {
             }}
           >
             {prevPost ? (
-              <Button onClick={() => navigate(`/posts/${prevPost.id}`)}>
-                {prevPost.title}
-              </Button>
+              <div
+                onClick={() => navigate(`/posts/${prevPost.id}`)}
+                style={{
+                  flex: 1,
+                  cursor: "pointer",
+                  padding: "14px 18px",
+                  borderRadius: 14,
+                  background: dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+                  border: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.06)",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)";
+                }}
+              >
+                <div style={{ fontSize: 12, opacity: 0.5, marginBottom: 4 }}>上一篇</div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{prevPost.title}</div>
+                <div style={{ fontSize: 12, opacity: 0.4, marginTop: 4 }}>{prevPost.date}</div>
+              </div>
             ) : (
-              <div />
+              <div style={{ flex: 1 }} />
             )}
             {nextPost ? (
-              <Button onClick={() => navigate(`/posts/${nextPost.id}`)}>
-                {nextPost.title}
-              </Button>
+              <div
+                onClick={() => navigate(`/posts/${nextPost.id}`)}
+                style={{
+                  flex: 1,
+                  cursor: "pointer",
+                  padding: "14px 18px",
+                  borderRadius: 14,
+                  textAlign: "right",
+                  background: dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+                  border: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.06)",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)";
+                }}
+              >
+                <div style={{ fontSize: 12, opacity: 0.5, marginBottom: 4 }}>下一篇</div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{nextPost.title}</div>
+                <div style={{ fontSize: 12, opacity: 0.4, marginTop: 4 }}>{nextPost.date}</div>
+              </div>
             ) : (
-              <div />
+              <div style={{ flex: 1 }} />
             )}
           </div>
 
         </div>
       </div>
+
+      {/* Back to top button */}
+      {showBackTop && !mobileTocOpen && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{
+            position: "fixed",
+            bottom: 84,
+            right: 20,
+            zIndex: 44,
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
+            background: dark
+              ? "linear-gradient(135deg, #3a3125, #2b2418)"
+              : "linear-gradient(135deg, #fffdf5, #fff8e3)",
+            boxShadow: dark
+              ? "0 4px 16px rgba(0,0,0,0.4)"
+              : "0 4px 16px rgba(180,140,60,0.2)",
+            cursor: "pointer",
+            fontSize: 18,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: dark ? "#f3e9d2" : "#3b2f22",
+            fontFamily: "inherit",
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m18 15-6-6-6 6"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Mobile TOC floating button */}
+      {tocItems.length > 0 && (
+        <>
+          <button
+            className="post-mobile-toc-btn"
+            onClick={() => setMobileTocOpen(true)}
+            style={{
+              position: "fixed",
+              bottom: 24,
+              right: 20,
+              zIndex: 45,
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
+              background: dark
+                ? "linear-gradient(135deg, #3a3125, #2b2418)"
+                : "linear-gradient(135deg, #fffdf5, #fff8e3)",
+              boxShadow: dark
+                ? "0 4px 16px rgba(0,0,0,0.4)"
+                : "0 4px 16px rgba(180,140,60,0.2)",
+              cursor: "pointer",
+              fontSize: 20,
+              display: "none",
+              color: dark ? "#f3e9d2" : "#3b2f22",
+              fontFamily: "inherit",
+            }}
+          >
+            📑
+          </button>
+
+          {/* Mobile TOC overlay */}
+          {mobileTocOpen && (
+            <div
+              className="post-mobile-toc-overlay"
+              onClick={() => setMobileTocOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 50,
+                background: "rgba(0,0,0,0.3)",
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: "fixed",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 51,
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                  padding: "20px 20px 32px",
+                  borderRadius: "20px 20px 0 0",
+                  background: dark ? "#2e2820" : "#fdfaf3",
+                  border: dark ? "1px solid #3d352a" : "1px solid #e8ddcc",
+                }}
+              >
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}>
+                  <span style={{ fontWeight: 700, fontSize: 16 }}>目录</span>
+                  <button
+                    onClick={() => setMobileTocOpen(false)}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      fontSize: 18,
+                      cursor: "pointer",
+                      color: dark ? "#f3e9d2" : "#3b2f22",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <nav>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {tocItems.map((item) => (
+                      <li key={item.id}>
+                        <a
+                          style={{
+                            display: "block",
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            fontWeight: activeId === item.id ? 700 : 400,
+                            color: dark ? "#e0d8c8" : "#3b2f22",
+                            textDecoration: "none",
+                            borderRadius: 8,
+                            background: activeId === item.id
+                              ? (dark ? "rgba(200,160,80,0.2)" : "rgba(180,140,60,0.15)")
+                              : "transparent",
+                            paddingLeft: item.level === 3 ? 28 : 12,
+                          }}
+                          href={`#${item.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setMobileTocOpen(false);
+                            handleTocClick(item.id);
+                          }}
+                        >
+                          {item.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Image zoom overlay */}
+      {zoomedImg && (
+        <div
+          onClick={() => setZoomedImg(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "zoom-out",
+            padding: 40,
+          }}
+        >
+          <img
+            src={zoomedImg}
+            alt=""
+            style={{
+              maxWidth: "100%",
+              maxHeight: "90vh",
+              borderRadius: 12,
+              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

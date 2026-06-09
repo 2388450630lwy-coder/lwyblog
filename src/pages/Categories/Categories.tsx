@@ -35,7 +35,9 @@ export default function Categories() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(
+    () => sessionStorage.getItem("lwyblog-cat-expanded") || null
+  );
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -67,7 +69,10 @@ export default function Categories() {
   const totalPosts = categoryStats.reduce((sum, c) => sum + c.count, 0);
 
   const handleToggle = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+    const next = expandedId === id ? null : id;
+    setExpandedId(next);
+    if (next) sessionStorage.setItem("lwyblog-cat-expanded", next);
+    else sessionStorage.removeItem("lwyblog-cat-expanded");
   };
 
   return (

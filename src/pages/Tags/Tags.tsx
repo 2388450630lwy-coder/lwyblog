@@ -15,7 +15,9 @@ export default function Tags() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(
+    () => sessionStorage.getItem("lwyblog-tags-filter") || null
+  );
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,7 +54,10 @@ export default function Tags() {
 
   const handleTagClick = (tag: string) => {
     const isSame = selectedTag === tag;
-    setSelectedTag(isSame ? null : tag);
+    const next = isSame ? null : tag;
+    setSelectedTag(next);
+    if (next) sessionStorage.setItem("lwyblog-tags-filter", next);
+    else sessionStorage.removeItem("lwyblog-tags-filter");
     if (!isSame) {
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -95,40 +100,42 @@ export default function Tags() {
 
         {/* Results area */}
         <div ref={resultsRef} className="tags-results">
-          {!selectedTag && (
-            <p className="tags-hint">👆 点击标签筛选文章</p>
-          )}
-
-          {selectedTag && (
-            <>
-              <div className="tags-results-header">
-                <span>
-                  标签「<strong>#{selectedTag}</strong>」下的文章（{filteredPosts.length} 篇）
-                </span>
-                <Button type="text" onClick={() => setSelectedTag(null)}>
-                  清除筛选
-                </Button>
-              </div>
-              <div className="tags-posts-list">
-                {filteredPosts.map((post) => (
-                  <Card key={post.id} color="app-green">
-                    <div
-                      className="tags-post-card"
-                      onClick={() => navigate(`/posts/${post.id}`)}
-                    >
-                      <span className="tags-post-cover">{post.cover}</span>
-                      <div className="tags-post-info">
-                        <h3 className="tags-post-title">{post.title}</h3>
-                        <div className="tags-post-meta">
-                          <span>{post.date}</span>
-                        </div>
-                      </div>
+          <div className="tags-results-header">
+            <span>
+              {selectedTag
+                ? <>标签「<strong>#{selectedTag}</strong>」的文章（{filteredPosts.length} 篇）</>
+                : <>全部文章（{posts.length} 篇）</>
+              }
+            </span>
+            {selectedTag && (
+              <Button type="text" onClick={() => setSelectedTag(null)}>
+                清除筛选
+              </Button>
+            )}
+          </div>
+          <div className="tags-posts-list">
+            {(selectedTag ? filteredPosts : posts).map((post) => (
+              <Card key={post.id} color="app-green">
+                <div
+                  className="tags-post-card"
+                  onClick={() => navigate(`/posts/${post.id}`)}
+                >
+                  <span className="tags-post-cover">{post.cover}</span>
+                  <div className="tags-post-info">
+                    <h3 className="tags-post-title">{post.title}</h3>
+                    <div className="tags-post-meta">
+                      <span>{post.date}</span>
+                      <span style={{ marginLeft: 8, display: "flex", gap: 4, flexWrap: "wrap" }}>
+                        {post.tags.map((t) => (
+                          <span key={t} style={{ fontSize: 12, opacity: 0.6 }}>#{t}</span>
+                        ))}
+                      </span>
                     </div>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
 
       </div>
