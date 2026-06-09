@@ -229,6 +229,17 @@
   color: #b0a898;
 }
 
+/* Warm tone Card override — article page */
+.post-page [class^="animal-card"] {
+    background: linear-gradient(135deg, #fffdf5, #fff8e3);
+    border: 1px solid rgba(180,140,60,0.15);
+}
+
+.post-page.blog--dark [class^="animal-card"] {
+    background: linear-gradient(135deg, #3a3125, #2b2418);
+    border-color: rgba(200,160,80,0.2);
+}
+
 /* === Post layout with TOC sidebar === */
 
 /* Loading bar — custom progress indicator that respects light/dark mode */
@@ -307,7 +318,7 @@
   scrollbar-width: none;
   font-size: 13px;
   z-index: 40;
-  background: #fdfaf3;
+  background: linear-gradient(180deg, #fffdf5, #fdfaf3);
   border: 1px solid #e8ddcc;
   border-radius: 14px;
   box-shadow: 0 2px 12px rgba(160, 130, 80, 0.08);
@@ -364,7 +375,7 @@
 
 /* Dark mode TOC */
 .blog--dark .post-toc {
-  background: #2e2820;
+  background: linear-gradient(180deg, #3a3125, #2e2820);
   border-color: #3d352a;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }

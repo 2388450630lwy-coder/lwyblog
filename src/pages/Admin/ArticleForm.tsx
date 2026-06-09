@@ -56,6 +56,7 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
   const [tagsStr, setTagsStr] = useState(initialData?.tags?.join(", ") ?? "");
   const [date, setDate] = useState(initialData?.date ?? todayStr());
   const [cover, setCover] = useState(initialData?.cover ?? "");
+  const [coverImage, setCoverImage] = useState(initialData?.coverImage ?? "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
   const [markdown, setMarkdown] = useState(
     initialData ? sectionsToMarkdown(initialData.sections) : "## \n\n"
@@ -136,6 +137,7 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
       categoryId,
       date: date.trim() || todayStr(),
       cover: cover.trim(),
+      coverImage: coverImage.trim() || undefined,
       excerpt: excerpt.trim(),
       sections: cleanSections,
       takeaways: cleanTakeaways,
@@ -195,7 +197,7 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
         </div>
         <div>
           <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
-            封面 Emoji
+            封面 Emoji（无封面图时显示）
           </label>
           <Input
             value={cover}
@@ -203,6 +205,17 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
             placeholder="如 🌸"
           />
         </div>
+      </div>
+
+      <div>
+        <label style={{ fontWeight: 700, fontSize: 14, display: "block", marginBottom: 4 }}>
+          封面图片 URL（可选，优先显示）
+        </label>
+        <Input
+          value={coverImage}
+          onChange={(e) => setCoverImage(e.target.value)}
+          placeholder="https://example.com/cover.jpg 或 @img/xxx"
+        />
       </div>
 
       <div>

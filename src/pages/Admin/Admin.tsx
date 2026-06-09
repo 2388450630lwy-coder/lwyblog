@@ -275,7 +275,7 @@ export default function Admin() {
         }}
       >
         <div className="admin-login">
-          <Card color="app-green">
+          <Card>
             <div style={{ padding: 40, textAlign: "center", maxWidth: 360, margin: "0 auto" }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
               <h2 style={{ margin: "0 0 8px" }}>管理后台</h2>
@@ -392,7 +392,7 @@ export default function Admin() {
                 </div>
               </div>
             </div>
-            <Card color="app-green">
+            <Card>
               <Table
                 columns={columns}
                 dataSource={filteredPosts as unknown as Record<string, unknown>[]}
@@ -411,7 +411,7 @@ export default function Admin() {
 
         {/* Categories Tab */}
         {adminTab === "categories" && (
-          <Card color="app-green">
+          <Card>
             <div className="admin-card-inner">
               <h3>📂 分类管理</h3>
               <div className="admin-cat-add">
@@ -459,7 +459,7 @@ export default function Admin() {
 
         {/* Images Tab */}
         {adminTab === "images" && (
-          <Card color="app-green">
+          <Card>
             <div className="admin-card-inner">
               <h3>🖼 图片管理</h3>
               <p style={{ fontSize: 13, opacity: 0.6, margin: "0 0 16px" }}>
@@ -513,7 +513,7 @@ export default function Admin() {
 
         {/* Social Tab */}
         {adminTab === "social" && (
-          <Card color="app-green">
+          <Card>
             <div className="admin-card-inner">
               <h3>🔗 社媒信息</h3>
               <div className="admin-social-list">

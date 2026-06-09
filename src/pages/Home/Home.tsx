@@ -9,9 +9,10 @@ import {
   Divider,
   Input,
   Switch,
-  Phone,
+  Time,
 } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
+import { useCategories } from "../../hooks/useCategories";
 import type { PostSection } from "../../data/posts";
 import "./Home.less";
 
@@ -57,6 +58,7 @@ const faqData = [
 function Home() {
   const navigate = useNavigate();
   const { posts } = usePosts();
+  const { getCategoryName } = useCategories();
   const stats = [
     { label: "文章", value: String(posts.length), emoji: "📝" },
     { label: "分类", value: String(new Set(posts.map((p) => p.categoryId || "default")).size), emoji: "📂" },
@@ -120,45 +122,34 @@ function Home() {
           </Button>
         </div>
         <div className="blog-hero-phone">
-          <Phone />
+          <Time />
         </div>
       </section>
 
       {/* Stats */}
       <section className="blog-stats">
         {stats.map((s) => (
-          <Card key={s.label} color="app-green">
-            <div className="blog-stat">
-              <div className="blog-stat-emoji">{s.emoji}</div>
-              <div className="blog-stat-value">{s.value}</div>
-              <div className="blog-stat-label">{s.label}</div>
-            </div>
-          </Card>
+          <div key={s.label} className="blog-stat">
+            <div className="blog-stat-emoji">{s.emoji}</div>
+            <div className="blog-stat-value">{s.value}</div>
+            <div className="blog-stat-label">{s.label}</div>
+          </div>
         ))}
       </section>
 
       {/* About */}
-      <section id="about" className="blog-section">
-        <h2 className="blog-section-title">关于我</h2>
-        <Card color="app-yellow">
-          <div className="blog-about-inner">
-            <div className="blog-avatar">🦊</div>
-            <div>
-              <h3 className="blog-about-name">你好，我是 LWY</h3>
-              <p className="blog-about-desc">
-                一名热爱前端开发的程序员。喜欢探索新技术，用代码创造有趣的东西。
-                工作之余喜欢读书、喝咖啡，偶尔钓鱼。
-              </p>
-            </div>
-            <div className="blog-skills">
-              {aboutTags.map((tag) => (
-                <span key={tag} className="blog-skill-tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </Card>
+      <section id="about" className="blog-about">
+        <div className="blog-avatar">🦊</div>
+        <h3 className="blog-about-name">你好，我是 LWY</h3>
+        <p className="blog-about-desc">
+          一名热爱前端开发的程序员。喜欢探索新技术，用代码创造有趣的东西。
+          工作之余喜欢读书、喝咖啡，偶尔钓鱼。
+        </p>
+        <div className="blog-skills">
+          {aboutTags.map((tag) => (
+            <span key={tag} className="blog-skill-tag">{tag}</span>
+          ))}
+        </div>
       </section>
 
       {/* Posts */}
@@ -171,10 +162,15 @@ function Home() {
               className="blog-post-card"
               onClick={() => navigate(`/posts/${post.id}`)}
             >
-              <Card color="app-green">
+              <Card>
                 <div className="blog-post-card-inner">
-                  <div className="blog-post-cover">{post.cover}</div>
+                  {post.coverImage && (
+                    <div className="blog-post-cover">
+                      <img src={post.coverImage} alt="" className="blog-post-cover-img" />
+                    </div>
+                  )}
                   <div className="blog-post-tags">
+                    <span className="blog-post-cat">{getCategoryName(post.categoryId)}</span>
                     {post.tags.map((t) => (
                       <span key={t} className="blog-post-tag">#{t}</span>
                     ))}
@@ -210,7 +206,7 @@ function Home() {
 
       {/* Subscribe */}
       <section id="subscribe" className="blog-section">
-        <Card color="app-pink">
+        <Card>
           <div className="blog-subscribe-inner">
             <h2 className="blog-subscribe-title">📬 订阅更新</h2>
             <p className="blog-subscribe-desc">

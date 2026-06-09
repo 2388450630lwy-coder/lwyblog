@@ -171,11 +171,13 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s;
-  background: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, rgba(255,253,245,0.7), rgba(255,248,227,0.7));
+  border: 1px solid rgba(180,140,60,0.1);
 }
 
 .archive-post-link:hover {
-  background: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg, rgba(255,253,245,0.95), rgba(255,248,227,0.95));
+  border-color: rgba(180, 140, 60, 0.25);
   transform: translateX(4px);
 }
 
@@ -232,11 +234,13 @@
 }
 
 .archive--dark .archive-post-link {
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(135deg, rgba(58,49,37,0.5), rgba(43,36,24,0.5));
+  border-color: rgba(200,160,80,0.12);
 }
 
 .archive--dark .archive-post-link:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(58,49,37,0.8), rgba(43,36,24,0.8));
+  border-color: rgba(200,160,80,0.25);
 }
 
 .archive--dark .archive-tag {

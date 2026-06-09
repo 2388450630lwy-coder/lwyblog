@@ -295,7 +295,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
                         padding: "4px 12px",
                         borderRadius: 14,
                         cursor: "pointer",
-                        background: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+                        background: dark ? "rgba(200,160,80,0.15)" : "rgba(180,140,60,0.1)",
                       }}
                     >
                       {h}
@@ -331,18 +331,24 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
                     borderRadius: 12,
                     cursor: "pointer",
                     marginBottom: 8,
-                    background: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
-                    transition: "background 0.15s",
+                    background: dark ? "linear-gradient(135deg, rgba(58,49,37,0.3), rgba(43,36,24,0.3))"
+                      : "linear-gradient(135deg, rgba(255,253,245,0.5), rgba(255,248,227,0.5))",
+                    border: dark ? "1px solid rgba(200,160,80,0.08)" : "1px solid rgba(180,140,60,0.08)",
+                    transition: "all 0.15s",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.background = dark
-                      ? "rgba(255,255,255,0.1)"
-                      : "rgba(0,0,0,0.06)";
+                      ? "linear-gradient(135deg, rgba(58,49,37,0.6), rgba(43,36,24,0.6))"
+                      : "linear-gradient(135deg, rgba(255,253,245,0.85), rgba(255,248,227,0.85))";
+                    (e.currentTarget as HTMLElement).style.borderColor = dark
+                      ? "rgba(200,160,80,0.2)" : "rgba(180,140,60,0.2)";
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.background = dark
-                      ? "rgba(255,255,255,0.05)"
-                      : "rgba(0,0,0,0.03)";
+                      ? "linear-gradient(135deg, rgba(58,49,37,0.3), rgba(43,36,24,0.3))"
+                      : "linear-gradient(135deg, rgba(255,253,245,0.5), rgba(255,248,227,0.5))";
+                    (e.currentTarget as HTMLElement).style.borderColor = dark
+                      ? "rgba(200,160,80,0.08)" : "rgba(180,140,60,0.08)";
                   }}
                 >
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
@@ -373,8 +379,8 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
                           padding: "1px 8px",
                           borderRadius: 8,
                           background: dark
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(255,255,255,0.6)",
+                            ? "rgba(200,160,80,0.15)"
+                            : "rgba(180,140,60,0.12)",
                         }}
                       >
                         #{t}
