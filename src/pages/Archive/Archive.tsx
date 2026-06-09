@@ -1,7 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePosts } from "../../hooks/usePosts";
+import type { PostSection } from "../../data/posts";
 import "./Archive.less";
+
+function readTime(sections: PostSection[]): number {
+  const chars = sections.reduce((sum, s) => {
+    return sum + s.heading.length + s.paragraphs.reduce((a, p) => a + p.length, 0);
+  }, 0);
+  return Math.max(1, Math.round(chars / 400));
+}
+
+function formatDay(date: string): string {
+  const d = date.split("-")[2];
+  return d ? `${parseInt(d)}日` : date;
+}
 
 interface GroupedPosts {
   year: string;
@@ -50,6 +63,12 @@ export default function Archive() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+  // Default: most recent year expanded, older collapsed
+  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(() => {
+    if (grouped.length <= 1) return new Set<string>();
+    return new Set(grouped.slice(1).map((g) => g.year));
+  });
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -77,22 +96,55 @@ export default function Archive() {
         <div className="archive-timeline">
           {grouped.map((group) => (
             <div key={group.year} className="archive-year-group">
-              <div className="archive-year-header">
+              <div
+                className="archive-year-header"
+                onClick={() => {
+                  setCollapsedYears((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(group.year)) next.delete(group.year);
+                    else next.add(group.year);
+                    return next;
+                  });
+                }}
+              >
                 <span className="archive-year-marker" />
                 <span className="archive-year">📅 {group.year}</span>
                 <span className="archive-year-count">{group.total} 篇</span>
+                <span className={`archive-year-chevron ${!collapsedYears.has(group.year) ? "archive-year-chevron--open" : ""}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m6 9 6 6 6-6"/>
+                  </svg>
+                </span>
               </div>
 
+              {!collapsedYears.has(group.year) && (
               <div className="archive-months">
                 {group.months.map((m) => (
                   <div key={`${group.year}-${m.month}`} className="archive-month-row">
-                    <div className="archive-month-label">
+                    <div
+                      className="archive-month-label"
+                      onClick={() => {
+                        const key = `${group.year}-${m.month}`;
+                        setCollapsedMonths((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(key)) next.delete(key);
+                          else next.add(key);
+                          return next;
+                        });
+                      }}
+                    >
                       <span className="archive-month-dot" />
                       <span className="archive-month-name">
                         {MONTH_NAMES[m.month] || `${m.month}月`}
                       </span>
                       <span className="archive-month-count">{m.posts.length} 篇</span>
+                      <span className={`archive-month-chevron ${!collapsedMonths.has(`${group.year}-${m.month}`) ? "archive-month-chevron--open" : ""}`}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                      </span>
                     </div>
+                    {!collapsedMonths.has(`${group.year}-${m.month}`) && (
                     <div className="archive-month-posts">
                       {m.posts.map((post) => (
                         <div
@@ -101,14 +153,26 @@ export default function Archive() {
                           onClick={() => navigate(`/posts/${post.id}`)}
                         >
                           <span className="archive-post-cover">{post.cover}</span>
-                          <span className="archive-post-date">{post.date}</span>
-                          <span className="archive-post-title">{post.title}</span>
+                          <div className="archive-post-info">
+                            <h3 className="archive-post-title">{post.title}</h3>
+                            <div className="archive-post-meta">
+                              <span>{formatDay(post.date)}</span>
+                              <span>约 {readTime(post.sections)} 分钟</span>
+                              <span className="archive-post-tags">
+                                {post.tags.map((t) => (
+                                  <span key={t} className="archive-tag">#{t}</span>
+                                ))}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
+                    )}
                   </div>
                 ))}
               </div>
+              )}
             </div>
           ))}
         </div>

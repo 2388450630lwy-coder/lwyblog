@@ -1,31 +1,39 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button } from "animal-island-ui";
+import { Button } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
 import { useCategories } from "../../hooks/useCategories";
+import type { PostSection } from "../../data/posts";
 import "./Categories.less";
 
-const EMOJI_MAP: Record<string, string> = {
-  "前端": "🖥",
-  "后端": "⚙️",
-  "读书": "📚",
-  "咖啡": "☕",
-  "python": "🐍",
-  "react": "⚛️",
-  "typescript": "🔷",
-  "css": "🎨",
-  "node.js": "🟢",
-  "vue": "💚",
-  "默认分类": "📂",
-};
+function readTime(sections: PostSection[]): number {
+  const chars = sections.reduce((sum, s) => {
+    return sum + s.heading.length + s.paragraphs.reduce((a, p) => a + p.length, 0);
+  }, 0);
+  return Math.max(1, Math.round(chars / 400));
+}
 
-function getEmoji(name: string): string {
-  if (EMOJI_MAP[name]) return EMOJI_MAP[name];
-  const lower = name.toLowerCase();
-  for (const [key, emoji] of Object.entries(EMOJI_MAP)) {
-    if (lower.includes(key.toLowerCase())) return emoji;
-  }
-  return "📂";
+const CAT_COLORS = [
+  "#d98c3b",
+  "#19c8b9",
+  "#86d67a",
+  "#c08040",
+  "#e09060",
+  "#5aaf8a",
+  "#b08050",
+  "#3db8a0",
+];
+
+function getCatColor(index: number): string {
+  return CAT_COLORS[index % CAT_COLORS.length];
+}
+
+function CategoryIcon({ color, size = 28 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M2 6a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/>
+    </svg>
+  );
 }
 
 export default function Categories() {
@@ -35,9 +43,12 @@ export default function Categories() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-  const [expandedId, setExpandedId] = useState<string | null>(
-    () => sessionStorage.getItem("lwyblog-cat-expanded") || null
-  );
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem("lwyblog-cat-expanded");
+    return saved ? new Set([saved]) : new Set<string>();
+  });
+  const [showAllIds, setShowAllIds] = useState<Set<string>>(new Set());
+  const SHOW_LIMIT = 5;
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -52,27 +63,37 @@ export default function Categories() {
 
   const categoryStats = useMemo(() => {
     const stats: { id: string; name: string; count: number }[] = [];
-
     for (const cat of categories) {
       const count = posts.filter((p) => (p.categoryId || "default") === cat.id).length;
       if (count > 0) stats.push({ ...cat, count });
     }
-
     return stats.sort((a, b) => b.count - a.count);
   }, [posts, categories]);
 
-  const expandedPosts = useMemo(() => {
-    if (!expandedId) return [];
-    return posts.filter((p) => (p.categoryId || "default") === expandedId);
-  }, [posts, expandedId]);
+  const categoryPosts = useMemo(() => {
+    const map: Record<string, typeof posts> = {};
+    for (const cat of categoryStats) {
+      map[cat.id] = posts.filter((p) => (p.categoryId || "default") === cat.id);
+    }
+    return map;
+  }, [posts, categoryStats]);
 
   const totalPosts = categoryStats.reduce((sum, c) => sum + c.count, 0);
 
   const handleToggle = (id: string) => {
-    const next = expandedId === id ? null : id;
-    setExpandedId(next);
-    if (next) sessionStorage.setItem("lwyblog-cat-expanded", next);
-    else sessionStorage.removeItem("lwyblog-cat-expanded");
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      // Save first expanded to sessionStorage for back-navigation
+      const arr = [...next];
+      if (arr.length > 0) sessionStorage.setItem("lwyblog-cat-expanded", arr[0]);
+      else sessionStorage.removeItem("lwyblog-cat-expanded");
+      return next;
+    });
   };
 
   return (
@@ -86,63 +107,107 @@ export default function Categories() {
       <div className="categories-container">
         <h1 className="categories-title">📂 文章分类</h1>
         <p className="categories-subtitle">
-          共 {categoryStats.length} 个分类 · {totalPosts} 篇文章
+          {categoryStats.length} 个分类 · {totalPosts} 篇文章
         </p>
 
-        {/* Category cards grid */}
-        <div className="categories-grid">
-          {categoryStats.map((cat) => (
-            <div
-              key={cat.id}
-              className={`categories-card ${expandedId === cat.id ? "categories-card--expanded" : ""}`}
-              onClick={() => handleToggle(cat.id)}
-            >
-              <div className="categories-card-emoji">{getEmoji(cat.name)}</div>
-              <div className="categories-card-name">{cat.name}</div>
-              <div className="categories-card-count">{cat.count} 篇</div>
-            </div>
-          ))}
+        {/* Expand toolbar */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 16,
+          fontSize: 14,
+          opacity: 0.7,
+        }}>
+          {expandedIds.size > 0 ? (
+            <>
+              <span>已展开 {expandedIds.size} 个分类</span>
+              <Button type="text" onClick={() => {
+                setExpandedIds(new Set());
+                sessionStorage.removeItem("lwyblog-cat-expanded");
+              }}>
+                收起全部
+              </Button>
+            </>
+          ) : (
+            <Button type="text" onClick={() => {
+              const all = new Set(categoryStats.map((c) => c.id));
+              setExpandedIds(all);
+              if (all.size > 0) sessionStorage.setItem("lwyblog-cat-expanded", [...all][0]);
+            }}>
+              展开全部
+            </Button>
+          )}
         </div>
 
-        {/* Expanded posts */}
-        {expandedId && (
-          <div className="categories-expanded">
-            <div className="categories-expanded-header">
-              <span>
-                {getEmoji(categoryStats.find((c) => c.id === expandedId)?.name || "")}{" "}
-                {categoryStats.find((c) => c.id === expandedId)?.name} 的文章
-              </span>
-              <Button type="text" onClick={() => setExpandedId(null)}>
-                收起
-              </Button>
-            </div>
-            <div className="categories-posts">
-              {expandedPosts.map((post) => (
-                <Card key={post.id} color="app-green">
-                  <div
-                    className="categories-post-card"
-                    onClick={() => navigate(`/posts/${post.id}`)}
-                  >
-                    <span className="categories-post-cover">{post.cover}</span>
-                    <div className="categories-post-info">
-                      <h3 className="categories-post-title">{post.title}</h3>
-                      <div className="categories-post-meta">
-                        <span>{post.date}</span>
-                        <span className="categories-post-tags">
-                          {post.tags.map((t) => (
-                            <span key={t} className="categories-tag">#{t}</span>
-                          ))}
-                        </span>
-                      </div>
-                    </div>
+        {/* Category list */}
+        <div className="categories-list">
+          {categoryStats.map((cat) => {
+            const isExpanded = expandedIds.has(cat.id);
+            const posts = categoryPosts[cat.id] || [];
+            return (
+              <div key={cat.id} className="categories-item">
+                {/* Card header — always visible, clickable */}
+                <div
+                  className={`categories-card ${isExpanded ? "categories-card--expanded" : ""}`}
+                  onClick={() => handleToggle(cat.id)}
+                >
+                  <span className="categories-card-icon">
+                    <CategoryIcon color={getCatColor(categoryStats.indexOf(cat))} />
+                  </span>
+                  <div className="categories-card-body">
+                    <span className="categories-card-name">{cat.name}</span>
+                    <span className="categories-card-count">{cat.count} 篇</span>
                   </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+                  <span className={`categories-card-chevron ${isExpanded ? "categories-card-chevron--open" : ""}`}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </span>
+                </div>
+
+                {/* Posts — appears right below the card when expanded */}
+                {isExpanded && (
+                  <div className="categories-posts">
+                    {(showAllIds.has(cat.id) ? posts : posts.slice(0, SHOW_LIMIT)).map((post) => (
+                      <div
+                        key={post.id}
+                        className="categories-post-card"
+                        onClick={() => navigate(`/posts/${post.id}`)}
+                      >
+                        <span className="categories-post-cover">{post.cover}</span>
+                        <div className="categories-post-info">
+                          <h3 className="categories-post-title">{post.title}</h3>
+                          <div className="categories-post-meta">
+                            <span>{post.date}</span>
+                            <span>约 {readTime(post.sections)} 分钟</span>
+                            <span className="categories-post-tags">
+                              {post.tags.map((t) => (
+                                <span key={t} className="categories-tag">#{t}</span>
+                              ))}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {posts.length > SHOW_LIMIT && !showAllIds.has(cat.id) && (
+                      <div
+                        className="categories-show-more"
+                        onClick={() => setShowAllIds((prev) => new Set(prev).add(cat.id))}
+                      >
+                        展开全部 {posts.length} 篇
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
       </div>
+
     </div>
   );
 }

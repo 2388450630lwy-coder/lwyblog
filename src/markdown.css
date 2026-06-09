@@ -262,6 +262,17 @@
   background: linear-gradient(90deg, #e0c890, #d98c3b, #c08040);
 }
 
+@keyframes post-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 @keyframes post-loading-slide {
   0% {
     left: -40%;

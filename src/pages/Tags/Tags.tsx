@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button } from "animal-island-ui";
+import { Button } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
 import "./Tags.less";
 
@@ -15,10 +15,14 @@ export default function Tags() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-  const [selectedTag, setSelectedTag] = useState<string | null>(
-    () => sessionStorage.getItem("lwyblog-tags-filter") || null
-  );
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(() => {
+    try {
+      const saved = sessionStorage.getItem("lwyblog-tags-filter");
+      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
+  const [showAll, setShowAll] = useState(false);
+  const SHOW_LIMIT = 5;
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -46,23 +50,24 @@ export default function Tags() {
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    if (!selectedTag) return [];
-    return posts.filter((p) => p.tags.includes(selectedTag));
-  }, [posts, selectedTag]);
+    if (selectedTags.size === 0) return posts;
+    return posts.filter((p) =>
+      [...selectedTags].every((t) => p.tags.includes(t))
+    );
+  }, [posts, selectedTags]);
 
   const maxCount = tagStats.length > 0 ? tagStats[0].count : 1;
 
   const handleTagClick = (tag: string) => {
-    const isSame = selectedTag === tag;
-    const next = isSame ? null : tag;
-    setSelectedTag(next);
-    if (next) sessionStorage.setItem("lwyblog-tags-filter", next);
-    else sessionStorage.removeItem("lwyblog-tags-filter");
-    if (!isSame) {
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    }
+    setSelectedTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      if (next.size > 0) sessionStorage.setItem("lwyblog-tags-filter", JSON.stringify([...next]));
+      else sessionStorage.removeItem("lwyblog-tags-filter");
+      return next;
+    });
+    setShowAll(false);
   };
 
   return (
@@ -74,20 +79,21 @@ export default function Tags() {
       }}
     >
       <div className="tags-container">
-        <h1 className="tags-title">🏷️ 标签云</h1>
+        <h1 className="tags-title">🏷️ 标签</h1>
         <p className="tags-subtitle">共 {tagStats.length} 个标签</p>
 
+        {/* Tag cloud — compact */}
         <div className="tags-cloud">
           {tagStats.map((tag) => {
-            const size = 0.85 + (tag.count / maxCount) * 1.1;
-            const isActive = selectedTag === tag.name;
+            const size = 0.8 + (tag.count / maxCount) * 0.7;
+            const isActive = selectedTags.has(tag.name);
             return (
               <span
                 key={tag.name}
                 className={`tags-item ${isActive ? "tags-item--active" : ""}`}
                 style={{
                   fontSize: `${size}em`,
-                  opacity: selectedTag && !isActive ? 0.35 : 1,
+                  opacity: selectedTags.size > 0 && !isActive ? 0.55 : 1,
                 }}
                 onClick={() => handleTagClick(tag.name)}
               >
@@ -98,43 +104,53 @@ export default function Tags() {
           })}
         </div>
 
-        {/* Results area */}
-        <div ref={resultsRef} className="tags-results">
+        {/* Results */}
+        <div className="tags-results">
           <div className="tags-results-header">
             <span>
-              {selectedTag
-                ? <>标签「<strong>#{selectedTag}</strong>」的文章（{filteredPosts.length} 篇）</>
+              {selectedTags.size > 0
+                ? <>标签「<strong>{[...selectedTags].map(t => `#${t}`).join(" + ")}</strong>」（{filteredPosts.length} 篇）</>
                 : <>全部文章（{posts.length} 篇）</>
               }
             </span>
-            {selectedTag && (
-              <Button type="text" onClick={() => setSelectedTag(null)}>
+            {selectedTags.size > 0 && (
+              <Button type="text" onClick={() => {
+                setSelectedTags(new Set());
+                sessionStorage.removeItem("lwyblog-tags-filter");
+              }}>
                 清除筛选
               </Button>
             )}
           </div>
           <div className="tags-posts-list">
-            {(selectedTag ? filteredPosts : posts).map((post) => (
-              <Card key={post.id} color="app-green">
-                <div
-                  className="tags-post-card"
-                  onClick={() => navigate(`/posts/${post.id}`)}
-                >
-                  <span className="tags-post-cover">{post.cover}</span>
-                  <div className="tags-post-info">
-                    <h3 className="tags-post-title">{post.title}</h3>
-                    <div className="tags-post-meta">
-                      <span>{post.date}</span>
-                      <span style={{ marginLeft: 8, display: "flex", gap: 4, flexWrap: "wrap" }}>
-                        {post.tags.map((t) => (
-                          <span key={t} style={{ fontSize: 12, opacity: 0.6 }}>#{t}</span>
-                        ))}
-                      </span>
-                    </div>
+            {(showAll ? filteredPosts : filteredPosts.slice(0, SHOW_LIMIT)).map((post) => (
+              <div
+                key={post.id}
+                className="tags-post-card"
+                onClick={() => navigate(`/posts/${post.id}`)}
+              >
+                <span className="tags-post-cover">{post.cover}</span>
+                <div className="tags-post-info">
+                  <h3 className="tags-post-title">{post.title}</h3>
+                  <div className="tags-post-meta">
+                    <span>{post.date}</span>
+                    <span className="tags-post-meta-tags">
+                      {post.tags.map((t) => (
+                        <span key={t}>#{t}</span>
+                      ))}
+                    </span>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
+            {filteredPosts.length > SHOW_LIMIT && !showAll && (
+              <div
+                className="tags-show-more"
+                onClick={() => setShowAll(true)}
+              >
+                展开全部 {filteredPosts.length} 篇
+              </div>
+            )}
           </div>
         </div>
 

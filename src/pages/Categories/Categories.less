@@ -23,20 +23,23 @@
   margin: 0 0 32px;
 }
 
-/* Category cards grid */
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 32px;
-}
-
-.categories-card {
+/* Category list */
+.categories-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.categories-item {
+  /* container for card + expanded posts */
+}
+
+/* Category card header */
+.categories-card {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 24px 16px;
+  gap: 14px;
+  padding: 18px 20px;
   border-radius: 16px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.6);
@@ -48,68 +51,90 @@
 .categories-card:hover {
   background: rgba(255, 255, 255, 0.85);
   border-color: rgba(180, 140, 60, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(180, 140, 60, 0.15);
+  transform: translateX(4px);
 }
 
 .categories-card--expanded {
-  background: rgba(180, 140, 60, 0.15);
-  border-color: rgba(180, 140, 60, 0.4);
-  box-shadow: 0 2px 12px rgba(180, 140, 60, 0.12);
+  background: rgba(180, 140, 60, 0.12);
+  border-color: rgba(180, 140, 60, 0.3);
 }
 
-.categories-card-emoji {
-  font-size: 36px;
-  line-height: 1;
+.categories-card--expanded:hover {
+  transform: translateX(4px);
+  background: rgba(180, 140, 60, 0.2);
+}
+
+.categories-card-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.categories-card:hover .categories-card-icon svg {
+  opacity: 0.85;
+}
+
+.categories-card-body {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .categories-card-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .categories-card-count {
-  font-size: 12px;
-  opacity: 0.55;
+  font-size: 13px;
+  opacity: 0.5;
 }
 
-/* Expanded posts */
-.categories-expanded {
-  margin-bottom: 32px;
-}
-
-.categories-expanded-header {
+/* Chevron indicator */
+.categories-card-chevron {
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: transform 0.2s, opacity 0.2s;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid rgba(180, 140, 60, 0.25);
-  font-weight: 700;
-  font-size: 17px;
 }
 
+.categories-card:hover .categories-card-chevron {
+  opacity: 0.7;
+}
+
+.categories-card-chevron--open {
+  opacity: 0.7;
+  transform: rotate(180deg);
+}
+
+/* Expanded posts — independent rounded cards, matching Tags page style */
 .categories-posts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
+  padding: 0 0 16px;
 }
 
 .categories-post-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 14px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: transform 0.15s;
+  border-radius: 12px;
+  transition: all 0.15s;
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .categories-post-card:hover {
+  background: rgba(255, 255, 255, 0.7);
   transform: translateX(4px);
 }
 
 .categories-post-cover {
-  font-size: 32px;
+  font-size: 28px;
   flex-shrink: 0;
 }
 
@@ -119,9 +144,9 @@
 }
 
 .categories-post-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .categories-post-meta {
@@ -146,6 +171,22 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
+.categories-show-more {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px;
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+
+.categories-show-more:hover {
+  opacity: 0.8;
+  background: rgba(180, 140, 60, 0.08);
+}
+
 /* Dark mode */
 .categories--dark .categories-card {
   background: rgba(255, 255, 255, 0.06);
@@ -153,16 +194,19 @@
 
 .categories--dark .categories-card:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(200, 160, 80, 0.3);
 }
 
 .categories--dark .categories-card--expanded {
-  background: rgba(200, 160, 80, 0.15);
-  border-color: rgba(200, 160, 80, 0.4);
+  background: rgba(200, 160, 80, 0.12);
+  border-color: rgba(200, 160, 80, 0.3);
 }
 
-.categories--dark .categories-expanded-header {
-  border-bottom-color: rgba(200, 160, 80, 0.25);
+.categories--dark .categories-post-card {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.categories--dark .categories-post-card:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .categories--dark .categories-tag {
@@ -170,7 +214,13 @@
 }
 
 @media (max-width: 500px) {
-  .categories-grid {
-    grid-template-columns: 1fr;
+  .categories-card {
+    padding: 14px 16px;
+  }
+
+  .categories-post-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

@@ -4,6 +4,7 @@ import { Card, Button, Divider } from "animal-island-ui";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import { usePosts } from "../../hooks/usePosts";
+import { useCategories } from "../../hooks/useCategories";
 import { loadImages } from "../../utils/images";
 import "../../markdown.css";
 import "highlight.js/styles/atom-one-dark.css";
@@ -17,6 +18,13 @@ function sectionsToMarkdown(sections: PostSection[]): string {
       return `${heading}\n\n${body}`;
     })
     .join("\n\n");
+}
+
+function readTime(sections: PostSection[]): number {
+  const chars = sections.reduce((sum, s) => {
+    return sum + s.heading.length + s.paragraphs.reduce((a, p) => a + p.length, 0);
+  }, 0);
+  return Math.max(1, Math.round(chars / 400));
 }
 
 function escapeAttr(text: string): string {
@@ -54,6 +62,13 @@ function buildHtml(markdown: string): string {
 </div>`.trim();
   };
 
+  renderer.link = function ({ href, title, text }) {
+    const titleAttr = title ? ` title="${title}"` : "";
+    const isExternal = /^https?:\/\//.test(href) && !href.includes(location.hostname);
+    const target = isExternal ? ' target="_blank" rel="noopener noreferrer"' : "";
+    return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
+  };
+
   marked.setOptions({ renderer });
   return marked.parse(markdown) as string;
 }
@@ -89,6 +104,7 @@ function Post() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { posts } = usePosts();
+  const { getCategoryName } = useCategories();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
@@ -111,8 +127,8 @@ function Post() {
   const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
 
   // Build HTML with heading IDs baked in — runs synchronously, no timing issues
-  const { htmlBody, tocItems } = useMemo(() => {
-    if (!post) return { htmlBody: "", tocItems: [] as TocItem[] };
+  const { htmlBody, tocItems, readingTime } = useMemo(() => {
+    if (!post) return { htmlBody: "", tocItems: [] as TocItem[], readingTime: 1 };
     let md = sectionsToMarkdown(post.sections);
     // Resolve @img/{id} short references to base64 data URLs
     const images = loadImages();
@@ -125,16 +141,16 @@ function Post() {
     }
     const raw = buildHtml(md);
     const result = injectHeadingIds(raw);
-    return { htmlBody: result.html, tocItems: result.toc };
+    return { htmlBody: result.html, tocItems: result.toc, readingTime: readTime(post.sections) };
   }, [post]);
 
-  const [isLoading, setIsLoading] = useState(true);
   const [activeId, setActiveId] = useState("");
   const [zoomedImg, setZoomedImg] = useState<string | null>(null);
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showBackTop, setShowBackTop] = useState(false);
-  const isFirstLoad = useRef(true);
+  const [copyToast, setCopyToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("代码已复制");
 
   // Scroll: progress bar + back-to-top visibility
   useEffect(() => {
@@ -159,14 +175,6 @@ function Post() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      const timer = setTimeout(() => setIsLoading(false), 1500);
-      return () => clearTimeout(timer);
-    } else {
-      setIsLoading(false);
-    }
   }, [id]);
 
   // Scroll spy — highlight the first heading at or below the viewport top
@@ -225,10 +233,13 @@ function Post() {
     navigator.clipboard.writeText(text).then(() => {
       btn.textContent = "已复制";
       btn.classList.add("copied");
+      setToastMsg("代码已复制");
+      setCopyToast(true);
       setTimeout(() => {
         btn.textContent = "复制";
         btn.classList.remove("copied");
       }, 2000);
+      setTimeout(() => setCopyToast(false), 1800);
     }).catch(() => {});
   }, []);
 
@@ -290,9 +301,26 @@ function Post() {
         }}
       />
 
-      {isLoading && (
-        <div className={dark ? "post-loading-bar post-loading-bar--dark" : "post-loading-bar"}>
-          <div className="post-loading-bar__track" />
+      {/* Copy toast */}
+      {copyToast && (
+        <div
+          style={{
+            position: "fixed",
+            top: 24,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 200,
+            padding: "10px 24px",
+            borderRadius: 12,
+            background: dark ? "#3a3125" : "#3b2f22",
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 600,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            animation: "post-toast-in 0.3s ease",
+          }}
+        >
+          {toastMsg}
         </div>
       )}
 
@@ -332,23 +360,71 @@ function Post() {
 
           {/* Article header */}
           <Card color="app-green">
-            <div style={{ padding: 32, textAlign: "center" }}>
-              <div style={{ fontSize: 64 }}>{post.cover}</div>
-              <span
-                style={{
-                  background: "rgba(255,255,255,0.6)",
-                  padding: "2px 12px",
-                  borderRadius: 12,
-                  fontSize: 13,
-                }}
-              >
+            <div style={{ padding: "28px 32px 24px", textAlign: "center" }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>{post.cover}</div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                <span
+                  onClick={() => {
+                    sessionStorage.setItem("lwyblog-cat-expanded", post.categoryId || "default");
+                    navigate("/categories");
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    padding: "3px 14px",
+                    borderRadius: 14,
+                    background: "#19c8b9",
+                    color: "#fff",
+                    transition: "opacity 0.15s",
+                  }}
+                >
+                  {getCategoryName(post.categoryId)}
+                </span>
                 {post.tags.map((t) => (
-                  <span key={t} style={{ margin: "0 4px" }}>#{t}</span>
+                  <span
+                    key={t}
+                    onClick={() => {
+                      sessionStorage.setItem("lwyblog-tags-filter", JSON.stringify([t]));
+                      navigate("/tags");
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      padding: "3px 12px",
+                      borderRadius: 14,
+                      background: "rgba(255,255,255,0.6)",
+                      transition: "background 0.15s",
+                    }}
+                  >#{t}</span>
                 ))}
-              </span>
-              <h1 style={{ margin: "12px 0", fontSize: 28 }}>{post.title}</h1>
-              <div style={{ color: "#888", fontSize: 14 }}>
-                {post.date}
+              </div>
+              <h1 style={{ margin: "0 0 8px", fontSize: 28 }}>{post.title}</h1>
+              <div style={{ color: "#888", fontSize: 14, display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
+                <span>{post.date} · 约 {readingTime} 分钟</span>
+                <span
+                  onClick={async () => {
+                    const url = window.location.href;
+                    if (navigator.share) {
+                      try { await navigator.share({ title: post.title, url }); } catch {}
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      setToastMsg("链接已复制");
+                      setCopyToast(true);
+                      setTimeout(() => setCopyToast(false), 1800);
+                    }
+                  }}
+                  style={{ cursor: "pointer", opacity: 0.5, display: "inline-flex", alignItems: "center" }}
+                  title="分享"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+                  </svg>
+                </span>
               </div>
             </div>
           </Card>
@@ -378,8 +454,8 @@ function Post() {
           {/* Takeaways */}
           <Card color="app-yellow">
             <div style={{ padding: 24 }}>
-              <h3>🌿 这篇文章的要点</h3>
-              <ul style={{ paddingLeft: 20, lineHeight: 2 }}>
+              <h3 style={{ margin: "0 0 14px", fontSize: 16, fontWeight: 700 }}>要点</h3>
+              <ul style={{ paddingLeft: 20, lineHeight: 2, margin: 0 }}>
                 {post.takeaways.map((t, i) => (
                   <li key={i}>{t}</li>
                 ))}

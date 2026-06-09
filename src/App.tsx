@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { Cursor, Loading, Footer } from "animal-island-ui";
 import "animal-island-ui/style";
 import { siGithub, siSinaweibo, siBilibili } from "simple-icons";
 import "./global.css";
 import Header from "./components/Header";
-import Home from "./pages/Home/Home";
-import Post from "./pages/Post/Post";
-import Admin from "./pages/Admin/Admin";
-import Categories from "./pages/Categories/Categories";
-import Tags from "./pages/Tags/Tags";
-import Archive from "./pages/Archive/Archive";
+
+// Route-level code splitting
+const Home = lazy(() => import("./pages/Home/Home"));
+const Post = lazy(() => import("./pages/Post/Post"));
+const Admin = lazy(() => import("./pages/Admin/Admin"));
+const Categories = lazy(() => import("./pages/Categories/Categories"));
+const Tags = lazy(() => import("./pages/Tags/Tags"));
+const Archive = lazy(() => import("./pages/Archive/Archive"));
 
 function SiIcon({ path, color }: { path: string; color: string }) {
   return (
@@ -74,14 +76,20 @@ function App() {
         <HashRouter>
           <Header dark={dark} onThemeChange={handleThemeChange} />
           <div style={{ flex: 1 }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/tags" element={<Tags />} />
-              <Route path="/archive" element={<Archive />} />
-              <Route path="/posts/:id" element={<Post />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
+            <Suspense fallback={
+              <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
+                <Loading />
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/tags" element={<Tags />} />
+                <Route path="/archive" element={<Archive />} />
+                <Route path="/posts/:id" element={<Post />} />
+                <Route path="/admin" element={<Admin />} />
+              </Routes>
+            </Suspense>
           </div>
           <div
             style={{

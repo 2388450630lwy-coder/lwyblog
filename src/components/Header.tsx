@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Switch, Modal, Input } from "animal-island-ui";
 import { usePosts } from "../hooks/usePosts";
@@ -22,6 +22,13 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [searchOpen]);
 
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
     try {
@@ -263,6 +270,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
       >
         <div style={{ padding: "12px 0" }}>
           <Input
+            ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索标题、标签或正文内容..."

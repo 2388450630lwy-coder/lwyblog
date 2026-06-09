@@ -12,8 +12,15 @@ import {
   Phone,
 } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
+import type { PostSection } from "../../data/posts";
 import "./Home.less";
 
+function readTime(sections: PostSection[]): number {
+  const chars = sections.reduce((sum, s) => {
+    return sum + s.heading.length + s.paragraphs.reduce((a, p) => a + p.length, 0);
+  }, 0);
+  return Math.max(1, Math.round(chars / 400));
+}
 
 const aboutTags = [
   "React / TS",
@@ -52,9 +59,9 @@ function Home() {
   const { posts } = usePosts();
   const stats = [
     { label: "文章", value: String(posts.length), emoji: "📝" },
+    { label: "分类", value: String(new Set(posts.map((p) => p.categoryId || "default")).size), emoji: "📂" },
     { label: "标签", value: String(new Set(posts.flatMap((p) => p.tags)).size), emoji: "🏷️" },
-    { label: "来访者", value: "1.2k", emoji: "👣" },
-    { label: "咖啡", value: "∞", emoji: "☕" },
+    { label: "始于", value: posts.length > 0 ? String(new Date(posts[posts.length - 1].date).getFullYear()) : "—", emoji: "📅" },
   ];
   const [introOpen, setIntroOpen] = useState(
     () => !localStorage.getItem("lwyblog-visited")
@@ -178,6 +185,7 @@ function Home() {
                   </p>
                   <div className="blog-post-meta">
                     <span>{post.date}</span>
+                    <span>约 {readTime(post.sections)} 分钟</span>
                   </div>
                 </div>
               </Card>
