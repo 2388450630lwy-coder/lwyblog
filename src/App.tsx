@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { Cursor, Loading, Footer } from "animal-island-ui";
 import "animal-island-ui/style";

@@ -347,6 +347,9 @@ export default function Admin() {
     },
   ];
 
+  // Read site info for login / sidebar branding
+  const siteInfo = loadSiteSettings();
+
   // ----- Login screen -----
   if (!authed) {
     return (
@@ -406,9 +409,6 @@ export default function Admin() {
     { key: "site" as const, label: "站点信息", icon: "🏝" },
     { key: "homepage" as const, label: "首页文案", icon: "📋" },
   ];
-
-  // Read site info for dynamic sidebar / login branding
-  const siteInfo = loadSiteSettings();
 
   // ----- Admin panel -----
   return (
