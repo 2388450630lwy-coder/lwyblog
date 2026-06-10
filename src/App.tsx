@@ -44,6 +44,8 @@ function App() {
   const [dark, setDark] = useState(() => {
     return localStorage.getItem("lwyblog-dark") === "1";
   });
+  const [transitioning, setTransitioning] = useState(false);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("lwyblog-dark", dark ? "1" : "0");
@@ -60,7 +62,11 @@ function App() {
     }));
 
   const handleThemeChange = (checked: boolean) => {
-    setDark(checked);
+    setTransitioning(true);
+    setTimeout(() => {
+      setDark(checked);
+      setTimeout(() => setTransitioning(false), 400);
+    }, 80);
   };
 
   return (
@@ -154,6 +160,16 @@ function App() {
         <div className="app-footer">
           <Footer type="sea" />
         </div>
+      </div>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 99999,
+          pointerEvents: transitioning ? "auto" : "none",
+        }}
+      >
+        <Loading active={transitioning} />
       </div>
     </Cursor>
   );
