@@ -13,6 +13,7 @@ import {
 } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
 import { useCategories } from "../../hooks/useCategories";
+import { loadSiteSettings } from "../../utils/siteSettings";
 import type { PostSection } from "../../data/posts";
 import "./Home.less";
 
@@ -22,38 +23,6 @@ function readTime(sections: PostSection[]): number {
   }, 0);
   return Math.max(1, Math.round(chars / 400));
 }
-
-const aboutTags = [
-  "React / TS",
-  "Node.js",
-  "Vue.js",
-  "Python",
-  "读书",
-  "咖啡",
-];
-
-const faqData = [
-  {
-    question: "这个博客是用什么搭建的？",
-    answer:
-      "使用 React 19 + TypeScript + Vite 构建，UI 组件库是 animal-island-ui，设计风格灵感来自动物森友会。",
-  },
-  {
-    question: "博客多久更新一次？",
-    answer:
-      "我会在有新想法或学到新东西时更新博客，大概每月 1-2 篇文章。质量比频率更重要。",
-  },
-  {
-    question: "可以转载文章吗？",
-    answer:
-      "欢迎转载，但请注明出处并附上原文链接。如果有任何疑问，可以通过邮件联系我。",
-  },
-  {
-    question: "为什么叫「无人岛」？",
-    answer:
-      "这个博客就像一座小岛，记录着我的思考和成长。希望来访的你能在这里找到一些有用的东西。",
-  },
-];
 
 function Home() {
   const navigate = useNavigate();
@@ -101,17 +70,19 @@ function Home() {
     }
   }, [email]);
 
+  const s = loadSiteSettings();
+
   return (
     <div className={`blog ${dark ? "blog--dark" : ""}`}>
       {/* Hero */}
       <section className="blog-hero">
         <div className="blog-hero-title">
           <Typewriter speed={80}>
-            <span>欢迎来到我的小岛！</span>
+            <span>{s.heroTypewriter}</span>
           </Typewriter>
         </div>
         <p className="blog-hero-sub">
-          在这里记录技术学习与生活点滴 🌿
+          {s.heroSubtitle}
         </p>
         <div className="blog-hero-actions">
           <Button type="primary" onClick={() => scrollTo("posts")}>
@@ -139,14 +110,11 @@ function Home() {
 
       {/* About */}
       <section id="about" className="blog-about">
-        <div className="blog-avatar">🦊</div>
-        <h3 className="blog-about-name">你好，我是 LWY</h3>
-        <p className="blog-about-desc">
-          一名热爱前端开发的程序员。喜欢探索新技术，用代码创造有趣的东西。
-          工作之余喜欢读书、喝咖啡，偶尔钓鱼。
-        </p>
+        <div className="blog-avatar">{s.avatarEmoji}</div>
+        <h3 className="blog-about-name">{s.authorName}</h3>
+        <p className="blog-about-desc" style={{ whiteSpace: "pre-line" }}>{s.authorBio}</p>
         <div className="blog-skills">
-          {aboutTags.map((tag) => (
+          {s.skillTags.map((tag) => (
             <span key={tag} className="blog-skill-tag">{tag}</span>
           ))}
         </div>
@@ -194,7 +162,7 @@ function Home() {
       <section id="faq" className="blog-section">
         <h2 className="blog-section-title">常见问题</h2>
         <div className="blog-faq">
-          {faqData.map((faq) => (
+          {s.faqItems.map((faq) => (
             <Collapse
               key={faq.question}
               question={faq.question}
@@ -208,14 +176,12 @@ function Home() {
       <section id="subscribe" className="blog-section">
         <Card>
           <div className="blog-subscribe-inner">
-            <h2 className="blog-subscribe-title">📬 订阅更新</h2>
-            <p className="blog-subscribe-desc">
-              不想错过新文章？留下邮箱吧
-            </p>
+            <h2 className="blog-subscribe-title">{s.subscribeTitle}</h2>
+            <p className="blog-subscribe-desc">{s.subscribeDescription}</p>
             {subscribed ? (
               <div className="blog-subscribe-success">
                 <p>🎉</p>
-                <p>订阅成功！有新文章时会通知你。</p>
+                <p>{s.subscribeSuccessMessage}</p>
               </div>
             ) : (
               <div className="blog-subscribe-form">
@@ -225,11 +191,11 @@ function Home() {
                   placeholder="your@email.com"
                 />
                 <div className="blog-subscribe-switch">
-                  <span>仅新文章</span>
+                  <span>{s.subscribeSwitchOffLabel}</span>
                   <Switch
                     checked={weeklyDigest}
                     onChange={setWeeklyDigest}
-                    checkedChildren="周刊"
+                    checkedChildren={s.subscribeSwitchOnLabel}
                     unCheckedChildren="实时"
                   />
                 </div>
@@ -249,15 +215,11 @@ function Home() {
         open={introOpen}
         onClose={closeIntro}
         onOk={closeIntro}
-        title="🌿 欢迎来到无人岛"
+        title={s.welcomeModalTitle}
       >
         <div className="blog-modal-text">
-          <span className="blog-modal-title">欢迎来到我的小岛！</span>
-          <p className="blog-modal-desc">
-            这里记录着我的技术探索和日常思考。
-            <br />
-            随意逛逛，希望能有所收获～
-          </p>
+          <span className="blog-modal-title">{s.welcomeModalBodyTitle}</span>
+          <p className="blog-modal-desc" style={{ whiteSpace: "pre-line" }}>{s.welcomeModalDescription}</p>
         </div>
       </Modal>
     </div>

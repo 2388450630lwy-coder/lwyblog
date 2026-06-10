@@ -8,6 +8,8 @@ import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID } from "../../data/posts";
 import ArticleForm from "./ArticleForm";
 import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
+import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
+import { loadSocial, saveSocial as persistSocial } from "../../utils/socialLinks";
 import "./Admin.less";
 
 const ADMIN_USER = "lwy";
@@ -58,12 +60,11 @@ export default function Admin() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newCatName, setNewCatName] = useState("");
   const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
-  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social">("posts");
+  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social" | "site" | "homepage">("posts");
 
   // Social media state
-  const SOCIAL_KEY = "lwyblog-social";
   const [github, setGithub] = useState("");
-  const [email, setEmailSocial] = useState("");
+  const [emailSocial, setEmailSocial] = useState("");
   const [weibo, setWeibo] = useState("");
   const [bilibili, setBilibili] = useState("");
 
@@ -72,14 +73,69 @@ export default function Admin() {
 
   const refreshImages = () => setImageList(loadImages());
 
+  // Site settings state
+  const [blogTitle, setBlogTitle] = useState("");
+  const [avatarEmoji, setAvatarEmoji] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [authorBio, setAuthorBio] = useState("");
+  const [skillTags, setSkillTags] = useState<string[]>([]);
+  const [logoEmoji, setLogoEmoji] = useState("");
+  const [newSkillTag, setNewSkillTag] = useState("");
+
+  const [heroTypewriter, setHeroTypewriter] = useState("");
+  const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [welcomeModalTitle, setWelcomeModalTitle] = useState("");
+  const [welcomeModalBodyTitle, setWelcomeModalBodyTitle] = useState("");
+  const [welcomeModalDescription, setWelcomeModalDescription] = useState("");
+  const [subscribeTitle, setSubscribeTitle] = useState("");
+  const [subscribeDescription, setSubscribeDescription] = useState("");
+  const [subscribeSuccessMessage, setSubscribeSuccessMessage] = useState("");
+  const [subscribeSwitchOffLabel, setSubscribeSwitchOffLabel] = useState("");
+  const [subscribeSwitchOnLabel, setSubscribeSwitchOnLabel] = useState("");
+
+  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
+
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("");
+
+  const [footerType, setFooterType] = useState("sea");
+  const [footerCopyright, setFooterCopyright] = useState("");
+
+  // Toast notification
+  const [toastMsg, setToastMsg] = useState("");
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 2000);
+  };
+
   // Save social media data to localStorage
   const saveSocial = () => {
-    localStorage.setItem(SOCIAL_KEY, JSON.stringify({
+    persistSocial({
       github: github.trim(),
-      email: email.trim(),
+      email: emailSocial.trim(),
       weibo: weibo.trim(),
       bilibili: bilibili.trim(),
-    }));
+    });
+    showToast("社媒信息已保存");
+  };
+
+  // Save site settings
+  const saveSite = () => {
+    saveSiteSettings({
+      blogTitle, avatarEmoji, authorName, authorBio,
+      skillTags, logoEmoji,
+      heroTypewriter, heroSubtitle,
+      welcomeModalTitle, welcomeModalBodyTitle, welcomeModalDescription,
+      subscribeTitle, subscribeDescription, subscribeSuccessMessage,
+      subscribeSwitchOffLabel, subscribeSwitchOnLabel,
+      faqItems,
+      seoTitle, seoDescription, seoKeywords,
+      footerType, footerCopyright,
+    });
+    showToast("站点设置已保存");
   };
 
   // Load images when switching to images tab
@@ -90,16 +146,40 @@ export default function Admin() {
   // Load social data when authenticated
   useEffect(() => {
     if (authed) {
-      try {
-        const raw = localStorage.getItem(SOCIAL_KEY);
-        if (raw) {
-          const data = JSON.parse(raw);
-          setGithub(data.github || "");
-          setEmailSocial(data.email || "");
-          setWeibo(data.weibo || "");
-          setBilibili(data.bilibili || "");
-        }
-      } catch { /* ignore */ }
+      const data = loadSocial();
+      setGithub(data.github || "");
+      setEmailSocial(data.email || "");
+      setWeibo(data.weibo || "");
+      setBilibili(data.bilibili || "");
+    }
+  }, [authed]);
+
+  // Load site settings when authenticated
+  useEffect(() => {
+    if (authed) {
+      const s = loadSiteSettings();
+      setBlogTitle(s.blogTitle);
+      setAvatarEmoji(s.avatarEmoji);
+      setAuthorName(s.authorName);
+      setAuthorBio(s.authorBio);
+      setSkillTags(s.skillTags);
+      setLogoEmoji(s.logoEmoji);
+      setHeroTypewriter(s.heroTypewriter);
+      setHeroSubtitle(s.heroSubtitle);
+      setWelcomeModalTitle(s.welcomeModalTitle);
+      setWelcomeModalBodyTitle(s.welcomeModalBodyTitle);
+      setWelcomeModalDescription(s.welcomeModalDescription);
+      setSubscribeTitle(s.subscribeTitle);
+      setSubscribeDescription(s.subscribeDescription);
+      setSubscribeSuccessMessage(s.subscribeSuccessMessage);
+      setSubscribeSwitchOffLabel(s.subscribeSwitchOffLabel);
+      setSubscribeSwitchOnLabel(s.subscribeSwitchOnLabel);
+      setFaqItems(s.faqItems);
+      setSeoTitle(s.seoTitle);
+      setSeoDescription(s.seoDescription);
+      setSeoKeywords(s.seoKeywords);
+      setFooterType(s.footerType);
+      setFooterCopyright(s.footerCopyright);
     }
   }, [authed]);
 
@@ -160,6 +240,7 @@ export default function Admin() {
   function confirmDelete() {
     if (postToDelete) {
       deletePost(postToDelete.id);
+      showToast("文章已删除");
     }
     setDeleteConfirmOpen(false);
     setPostToDelete(null);
@@ -168,8 +249,10 @@ export default function Admin() {
   function handleSave(data: Post | Omit<Post, "id">) {
     if ("id" in data) {
       updatePost(data as Post);
+      showToast("文章已更新");
     } else {
       addPost(data);
+      showToast("文章已创建");
     }
     setFormOpen(false);
     setEditingPost(null);
@@ -184,6 +267,7 @@ export default function Admin() {
   function saveEditCat() {
     if (editingCatId && editingCatName.trim()) {
       updateCategory({ id: editingCatId, name: editingCatName.trim() });
+      showToast("分类已更新");
     }
     setEditingCatId(null);
     setEditingCatName("");
@@ -193,6 +277,7 @@ export default function Admin() {
     if (newCatName.trim()) {
       addCategory(newCatName.trim());
       setNewCatName("");
+      showToast("分类已添加");
     }
   }
 
@@ -277,9 +362,9 @@ export default function Admin() {
         <div className="admin-login">
           <Card>
             <div style={{ padding: 40, textAlign: "center", maxWidth: 360, margin: "0 auto" }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>{siteInfo.logoEmoji}</div>
               <h2 style={{ margin: "0 0 8px" }}>管理后台</h2>
-              <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.6 }}>LWY's Island</p>
+              <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.6 }}>{siteInfo.blogTitle}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <Input
                   value={username}
@@ -288,6 +373,7 @@ export default function Admin() {
                   onKeyDown={handleLoginKeyDown}
                 />
                 <Input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="密码"
@@ -317,7 +403,12 @@ export default function Admin() {
     { key: "categories" as const, label: "分类管理", icon: "📂" },
     { key: "images" as const, label: "图片管理", icon: "🖼" },
     { key: "social" as const, label: "社媒信息", icon: "🔗" },
+    { key: "site" as const, label: "站点信息", icon: "🏝" },
+    { key: "homepage" as const, label: "首页文案", icon: "📋" },
   ];
+
+  // Read site info for dynamic sidebar / login branding
+  const siteInfo = loadSiteSettings();
 
   // ----- Admin panel -----
   return (
@@ -333,8 +424,8 @@ export default function Admin() {
       {/* Sidebar */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand" onClick={() => navigate("/")}>
-          <span className="admin-sidebar-logo">🌿</span>
-          <span className="admin-sidebar-name">LWY's Island</span>
+          <span className="admin-sidebar-logo">{siteInfo.logoEmoji}</span>
+          <span className="admin-sidebar-name">{siteInfo.blogTitle}</span>
         </div>
         <nav className="admin-sidebar-nav">
           {sidebarItems.map((item) => (
@@ -494,12 +585,16 @@ export default function Admin() {
                           {img.date} · 引用：<code>@img/{img.id}</code>
                         </div>
                       </div>
-                      <Button type="text" onClick={() => navigator.clipboard.writeText(`![image](@img/${img.id})`)}>
+                      <Button type="text" onClick={() => {
+                        navigator.clipboard.writeText(`![image](@img/${img.id})`);
+                        showToast("已复制图片引用");
+                      }}>
                         复制
                       </Button>
                       <Button type="text" onClick={() => {
                         deleteImage(img.id);
                         refreshImages();
+                        showToast("图片已删除");
                       }}>
                         删除
                       </Button>
@@ -528,7 +623,7 @@ export default function Admin() {
                 <div className="admin-social-row">
                   <label>邮箱</label>
                   <Input
-                    value={email}
+                    value={emailSocial}
                     onChange={(e) => setEmailSocial(e.target.value)}
                     placeholder="xxx@email.com"
                   />
@@ -556,7 +651,272 @@ export default function Admin() {
             </div>
           </Card>
         )}
+
+        {/* Site Settings Tab */}
+        {adminTab === "site" && (
+          <Card>
+            <div className="admin-card-inner">
+              <h3>🏝 站点信息</h3>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>站点名称</label>
+                  <Input value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} placeholder="LWY's Island" />
+                </div>
+                <div className="admin-social-row">
+                  <label>Logo 图标</label>
+                  <Input value={logoEmoji} onChange={(e) => setLogoEmoji(e.target.value)} placeholder="🌿" />
+                </div>
+                <div className="admin-social-row">
+                  <label>头像图标</label>
+                  <Input value={avatarEmoji} onChange={(e) => setAvatarEmoji(e.target.value)} placeholder="🦊" />
+                </div>
+                <div className="admin-social-row">
+                  <label>作者昵称</label>
+                  <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="你好，我是 LWY" />
+                </div>
+                <div className="admin-social-row">
+                  <label>作者简介</label>
+                  <Input value={authorBio} onChange={(e) => setAuthorBio(e.target.value)} placeholder="一段简短的自我介绍..." />
+                </div>
+              </div>
+
+              {/* Skill Tags */}
+              <div style={{ marginTop: 12 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 13, opacity: 0.75 }}>
+                  技能标签
+                </label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  {skillTags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "4px 12px",
+                        borderRadius: 14,
+                        fontSize: 13,
+                        background: "rgba(255,255,255,0.5)",
+                      }}
+                    >
+                      {tag}
+                      <span
+                        onClick={() => setSkillTags(skillTags.filter((_, i) => i !== idx))}
+                        style={{ cursor: "pointer", fontSize: 14, lineHeight: 1, opacity: 0.5 }}
+                      >
+                        ✕
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Input
+                    value={newSkillTag}
+                    onChange={(e) => setNewSkillTag(e.target.value)}
+                    placeholder="新标签"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newSkillTag.trim()) {
+                        setSkillTags([...skillTags, newSkillTag.trim()]);
+                        setNewSkillTag("");
+                      }
+                    }}
+                  />
+                  <Button onClick={() => {
+                    if (newSkillTag.trim()) {
+                      setSkillTags([...skillTags, newSkillTag.trim()]);
+                      setNewSkillTag("");
+                    }
+                  }}>添加</Button>
+                </div>
+              </div>
+
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>页脚设置</h4>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>页脚类型</label>
+                  <Select
+                    value={footerType}
+                    onChange={setFooterType}
+                    options={[
+                      { label: "🌊 海浪 (sea)", key: "sea" },
+                      { label: "🌳 树林 (tree)", key: "tree" },
+                    ]}
+                  />
+                </div>
+                <div className="admin-social-row">
+                  <label>版权文字</label>
+                  <Input value={footerCopyright} onChange={(e) => setFooterCopyright(e.target.value)} placeholder="© 2024 Your Name" />
+                </div>
+              </div>
+
+              <div className="admin-social-save" style={{ marginTop: 20 }}>
+                <Button type="primary" onClick={saveSite}>保存</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Homepage Text Tab */}
+        {adminTab === "homepage" && (
+          <Card>
+            <div className="admin-card-inner">
+              <h3>📋 首页文案</h3>
+
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>Hero 区域</h4>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>打字机文字</label>
+                  <Input value={heroTypewriter} onChange={(e) => setHeroTypewriter(e.target.value)} placeholder="欢迎来到我的小岛！" />
+                </div>
+                <div className="admin-social-row">
+                  <label>副标题</label>
+                  <Input value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} placeholder="在这里记录技术学习与生活点滴 🌿" />
+                </div>
+              </div>
+
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>欢迎弹窗</h4>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>弹窗标题</label>
+                  <Input value={welcomeModalTitle} onChange={(e) => setWelcomeModalTitle(e.target.value)} placeholder="🌿 欢迎来到无人岛" />
+                </div>
+                <div className="admin-social-row">
+                  <label>正文标题</label>
+                  <Input value={welcomeModalBodyTitle} onChange={(e) => setWelcomeModalBodyTitle(e.target.value)} placeholder="欢迎来到我的小岛！" />
+                </div>
+                <div className="admin-social-row">
+                  <label>描述文字</label>
+                  <Input value={welcomeModalDescription} onChange={(e) => setWelcomeModalDescription(e.target.value)} placeholder="这里记录着我的技术探索..." />
+                </div>
+              </div>
+
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>订阅区</h4>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>订阅标题</label>
+                  <Input value={subscribeTitle} onChange={(e) => setSubscribeTitle(e.target.value)} placeholder="📬 订阅更新" />
+                </div>
+                <div className="admin-social-row">
+                  <label>订阅描述</label>
+                  <Input value={subscribeDescription} onChange={(e) => setSubscribeDescription(e.target.value)} placeholder="不想错过新文章？留下邮箱吧" />
+                </div>
+                <div className="admin-social-row">
+                  <label>成功消息</label>
+                  <Input value={subscribeSuccessMessage} onChange={(e) => setSubscribeSuccessMessage(e.target.value)} placeholder="订阅成功！有新文章时会通知你。" />
+                </div>
+                <div className="admin-social-row">
+                  <label>开关左侧文字</label>
+                  <Input value={subscribeSwitchOffLabel} onChange={(e) => setSubscribeSwitchOffLabel(e.target.value)} placeholder="仅新文章" />
+                </div>
+                <div className="admin-social-row">
+                  <label>开关右侧文字</label>
+                  <Input value={subscribeSwitchOnLabel} onChange={(e) => setSubscribeSwitchOnLabel(e.target.value)} placeholder="周刊" />
+                </div>
+              </div>
+
+              {/* FAQ Management */}
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>
+                常见问题 ({faqItems.length})
+              </h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {faqItems.map((faq, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      background: "rgba(255,255,255,0.5)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 12, opacity: 0.5, flexShrink: 0 }}>Q{idx + 1}:</span>
+                      <Input
+                        value={faq.question}
+                        onChange={(e) => {
+                          const next = [...faqItems];
+                          next[idx] = { ...next[idx], question: e.target.value };
+                          setFaqItems(next);
+                        }}
+                        placeholder="问题"
+                      />
+                      <Button type="text" onClick={() => setFaqItems(faqItems.filter((_, i) => i !== idx))}>
+                        删除
+                      </Button>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 12, opacity: 0.5, flexShrink: 0 }}>A{idx + 1}:</span>
+                      <Input
+                        value={faq.answer}
+                        onChange={(e) => {
+                          const next = [...faqItems];
+                          next[idx] = { ...next[idx], answer: e.target.value };
+                          setFaqItems(next);
+                        }}
+                        placeholder="答案"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <Input value={newFaqQ} onChange={(e) => setNewFaqQ(e.target.value)} placeholder="新问题" />
+                <Input value={newFaqA} onChange={(e) => setNewFaqA(e.target.value)} placeholder="新答案" />
+                <Button onClick={() => {
+                  if (newFaqQ.trim() && newFaqA.trim()) {
+                    setFaqItems([...faqItems, { question: newFaqQ.trim(), answer: newFaqA.trim() }]);
+                    setNewFaqQ("");
+                    setNewFaqA("");
+                  }
+                }}>添加</Button>
+              </div>
+
+              <h4 style={{ margin: "16px 0 8px", fontSize: 13, opacity: 0.6 }}>SEO / 元信息</h4>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>页面标题</label>
+                  <Input value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} placeholder="LWY's Island" />
+                </div>
+                <div className="admin-social-row">
+                  <label>描述 (meta)</label>
+                  <Input value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} placeholder="description" />
+                </div>
+                <div className="admin-social-row">
+                  <label>关键词 (meta)</label>
+                  <Input value={seoKeywords} onChange={(e) => setSeoKeywords(e.target.value)} placeholder="博客, 前端, React" />
+                </div>
+              </div>
+
+              <div className="admin-social-save" style={{ marginTop: 20 }}>
+                <Button type="primary" onClick={saveSite}>保存</Button>
+              </div>
+            </div>
+          </Card>
+        )}
       </main>
+
+      {/* Toast */}
+      {toastMsg && (
+        <div style={{ position: "fixed", bottom: 32, left: "50%", zIndex: 9999, pointerEvents: "none" }}>
+          <div
+            style={{
+              transform: "translateX(-50%)",
+              padding: "10px 24px",
+              borderRadius: 12,
+              background: dark ? "rgba(58,49,37,0.95)" : "rgba(60,50,30,0.9)",
+              color: "#f3e9d2",
+              fontSize: 14,
+              fontWeight: 600,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+              animation: "toastIn 0.3s ease",
+            }}
+          >
+            {toastMsg}
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <Modal
@@ -565,6 +925,7 @@ export default function Admin() {
         onOk={() => {
           if (catDeleteConfirm) {
             deleteCategory(catDeleteConfirm.id);
+            showToast("分类已删除");
             setCatDeleteConfirm(null);
           }
         }}

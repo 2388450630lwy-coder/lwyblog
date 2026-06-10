@@ -1,6 +1,16 @@
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
+}
+
+body {
+  background: #dbe4ee;
+  margin: 0;
 }
 
 /* Global dark mode */
@@ -23,6 +33,10 @@ html.dark .admin {
 
 html.dark .admin-title {
   color: #f3e9d2;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Force footer wave to fill full width */

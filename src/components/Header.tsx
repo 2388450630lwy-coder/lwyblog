@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Switch, Modal, Input } from "animal-island-ui";
 import { usePosts } from "../hooks/usePosts";
+import { loadSiteSettings } from "../utils/siteSettings";
 
 interface HeaderProps {
   dark: boolean;
@@ -131,7 +132,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
           style={{ fontSize: 20, fontWeight: 800, cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
-          LWY's Island
+          {loadSiteSettings().blogTitle}
         </span>
 
         {/* Desktop nav */}
