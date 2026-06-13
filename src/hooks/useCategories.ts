@@ -11,11 +11,26 @@ export interface UseCategoriesReturn {
   getCategoryName: (id?: string) => string;
 }
 
+const SEED_CATEGORIES: Category[] = [
+  { id: DEFAULT_CATEGORY_ID, name: DEFAULT_CATEGORY_NAME },
+  { id: "linux", name: "Linux" },
+  { id: "unity", name: "Unity" },
+  { id: "algorithm", name: "算法" },
+  { id: "pattern", name: "设计模式" },
+  { id: "insight", name: "心得" },
+  { id: "tools", name: "Tools" },
+];
+
 function ensureCategories(localData: ReturnType<typeof loadLocalData>): Category[] {
-  if (!localData.categories || localData.categories.length === 0) {
-    localData.categories = [{ id: DEFAULT_CATEGORY_ID, name: DEFAULT_CATEGORY_NAME }];
-    saveLocalData(localData);
+  if (!localData.categories) localData.categories = [];
+  let changed = false;
+  for (const seed of SEED_CATEGORIES) {
+    if (!localData.categories.some((c: Category) => c.id === seed.id)) {
+      localData.categories.push(seed);
+      changed = true;
+    }
   }
+  if (changed) saveLocalData(localData);
   return localData.categories;
 }
 
@@ -24,10 +39,7 @@ export function useCategories(): UseCategoriesReturn {
 
   const categories = useMemo(() => {
     const localData = loadLocalData();
-    if (!localData.categories || localData.categories.length === 0) {
-      return [{ id: DEFAULT_CATEGORY_ID, name: DEFAULT_CATEGORY_NAME }];
-    }
-    return localData.categories;
+    return ensureCategories(localData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version]);
 

@@ -1,4 +1,7 @@
+import seedImages from "../data/seed-images.json";
+
 const STORAGE_KEY = "lwyblog-images";
+const SEED_LOADED_KEY = "lwyblog-images-seeded";
 
 export interface StoredImage {
   id: string;
@@ -7,13 +10,31 @@ export interface StoredImage {
   date: string;
 }
 
-export function loadImages(): StoredImage[] {
+function mergeSeedImages(): void {
+  try {
+    if (localStorage.getItem(SEED_LOADED_KEY)) return;
+    const existing = loadImagesRaw();
+    const existingIds = new Set(existing.map((e) => e.id));
+    const newImages = seedImages.filter((s) => !existingIds.has(s.id));
+    if (newImages.length > 0) {
+      saveImages([...existing, ...newImages]);
+    }
+    localStorage.setItem(SEED_LOADED_KEY, "1");
+  } catch { /* ignore */ }
+}
+
+function loadImagesRaw(): StoredImage[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
+}
+
+export function loadImages(): StoredImage[] {
+  mergeSeedImages();
+  return loadImagesRaw();
 }
 
 export function saveImages(images: StoredImage[]): void {
