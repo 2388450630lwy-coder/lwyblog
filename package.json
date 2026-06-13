@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@fontsource/m-plus-rounded-1c": "^5.2.10",
-    "animal-island-ui": "^0.9.1",
+    "animal-island-ui": "^0.9.4",
     "fast-xml-parser": "^5.8.0",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.4",
