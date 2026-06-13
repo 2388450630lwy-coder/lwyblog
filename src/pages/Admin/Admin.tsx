@@ -7,6 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
 import { loadLocalData } from "../../utils/localStorage";
+import { deploySiteConfig, setDeployToken, getDeployToken } from "../../utils/deploy";
 import ArticleForm from "./ArticleForm";
 import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
@@ -104,6 +105,7 @@ export default function Admin() {
 
   const [footerType, setFooterType] = useState("sea");
   const [footerCopyright, setFooterCopyright] = useState("");
+  const [ghToken, setGhToken] = useState(() => getDeployToken());
 
   // Toast notification
   const [toastMsg, setToastMsg] = useState("");
@@ -125,7 +127,7 @@ export default function Admin() {
 
   // Save site settings
   const saveSite = () => {
-    saveSiteSettings({
+    const config = {
       blogTitle, avatarEmoji, authorName, authorBio,
       skillTags, logoEmoji,
       heroTypewriter, heroSubtitle,
@@ -135,8 +137,16 @@ export default function Admin() {
       faqItems,
       seoTitle, seoDescription, seoKeywords,
       footerType, footerCopyright,
-    });
-    showToast("站点设置已保存");
+    };
+    saveSiteSettings(config);
+    // Auto-deploy if token is set
+    if (ghToken) {
+      deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
+        showToast(ok ? "已保存并触发部署，1-2 分钟后生效" : "保存成功，部署失败");
+      });
+    } else {
+      showToast("站点设置已保存");
+    }
   };
 
   // Load images when switching to images tab
@@ -441,6 +451,14 @@ export default function Admin() {
           ))}
         </nav>
         <div className="admin-sidebar-footer">
+          <div style={{ marginBottom: 8 }}>
+            <Input
+              value={ghToken}
+              onChange={(e) => { setGhToken(e.target.value); setDeployToken(e.target.value); }}
+              placeholder="GitHub Token (自动部署)"
+              style={{ fontSize: 11 }}
+            />
+          </div>
           <Button type="text" onClick={() => navigate("/")}>
             返回博客
           </Button>
