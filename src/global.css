@@ -19,6 +19,47 @@ html.dark body {
   color: #f3e9d2;
 }
 
+/* Dark mode buttons */
+html.dark [class*="animal-btn-primary"] {
+  color: #e0d8c8 !important;
+  background: linear-gradient(135deg, #6b4a2a, #4a3020) !important;
+  border-color: #5a3a20 !important;
+  box-shadow: 0 5px #3a2818 !important;
+}
+html.dark [class*="animal-btn-primary"]:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7a5430, #553a28) !important;
+  border-color: #6b4a28 !important;
+  box-shadow: 0 6px #4a3020 !important;
+}
+html.dark [class*="animal-btn-primary"]:active:not(:disabled) {
+  background: linear-gradient(135deg, #4a3020, #3a2018) !important;
+  border-color: #3a2018 !important;
+  box-shadow: 0 2px #3a2818 !important;
+}
+html.dark [class*="animal-btn-primary"][class*="animal-btn-active"],
+html.dark [class*="animal-btn-primary"][aria-pressed="true"] {
+  background: #3a2818 !important;
+  border-color: #5a3a20 !important;
+}
+html.dark [class*="animal-btn-default"] {
+  color: #c0b090 !important;
+  background: rgba(200,160,80,0.08) !important;
+  border-color: rgba(200,160,80,0.2) !important;
+  box-shadow: none !important;
+}
+html.dark [class*="animal-btn-default"]:hover {
+  color: #e0c080 !important;
+  background: rgba(200,160,80,0.16) !important;
+  border-color: rgba(200,160,80,0.35) !important;
+}
+html.dark [class*="animal-btn-text"] {
+  color: #c0b090 !important;
+  background: transparent !important;
+}
+html.dark [class*="animal-btn-text"]:hover {
+  color: #e0c080 !important;
+}
+
 html.dark .blog-post-content {
   color: #e0d8c8;
 }
@@ -44,6 +85,206 @@ html.dark .admin-title {
   background-size: 100% auto !important;
 }
 
+/* ═══ Custom scrollbar ═══ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(180,140,60,0.35); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(180,140,60,0.55); }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(200,160,80,0.25); }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(200,160,80,0.45); }
+
+/* ═══ Link underline animation ═══ */
+.blog-post-content a,
+.blog-about a {
+  position: relative;
+  text-decoration: none !important;
+  color: #19c8b9;
+}
+.blog-post-content a::after,
+.blog-about a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -1px;
+  width: 100%; height: 1.5px;
+  background: #19c8b9;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.blog-post-content a:hover::after,
+.blog-about a:hover::after { transform: scaleX(1); }
+
+/* ═══ Blockquote enhancement ═══ */
+.blog-post-content blockquote {
+  position: relative;
+  background: linear-gradient(90deg, rgba(217,140,59,0.06) 0%, transparent 100%);
+  border-left: 3px solid #d98c3b !important;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 20px !important;
+}
+.blog-post-content blockquote::before {
+  content: "❝";
+  position: absolute;
+  top: -8px; left: 8px;
+  font-size: 20px;
+  color: #d98c3b;
+  opacity: 0.5;
+}
+
+/* ═══ Image lazy-load blur ═══ */
+.blog-post-content img {
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+.blog-post-content img[loading="lazy"] {
+  filter: blur(10px);
+  opacity: 0.6;
+}
+.blog-post-content img[loading="lazy"]:not([src=""]) {
+  filter: blur(0);
+  opacity: 1;
+}
+
+/* ═══ Dark mode stars ═══ */
+html.dark body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 40% 8%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 55% 42%, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 85% 28%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 15% 52%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 33% 68%, rgba(255,255,255,0.25), transparent),
+    radial-gradient(1px 1px at 60% 58%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 78% 72%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 92% 48%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1px 1px at 48% 88%, rgba(255,255,255,0.25), transparent);
+  animation: starField 60s linear infinite;
+}
+
+@keyframes starField {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100px); }
+}
+
+/* ═══ Fireflies (dark mode) ═══ */
+html.dark body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(8px 8px at 15% 85%, rgba(180,255,100,0.12) 0%, transparent 100%),
+    radial-gradient(6px 6px at 35% 75%, rgba(160,255,80,0.10) 0%, transparent 100%),
+    radial-gradient(10px 10px at 55% 90%, rgba(200,255,120,0.08) 0%, transparent 100%),
+    radial-gradient(7px 7px at 72% 80%, rgba(170,255,90,0.11) 0%, transparent 100%),
+    radial-gradient(5px 5px at 88% 88%, rgba(190,255,110,0.09) 0%, transparent 100%);
+  animation: fireflyFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes fireflyFloat {
+  0%   { opacity: 0.4; transform: translate(0, 0); }
+  50%  { opacity: 0.8; transform: translate(10px, -15px); }
+  100% { opacity: 0.5; transform: translate(-5px, -8px); }
+}
+
+/* ═══ Back-to-top button ═══ */
+.back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(180,140,60,0.3);
+  background: linear-gradient(135deg, rgba(255,253,245,0.9), rgba(255,248,227,0.85));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #6b5030;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(180,140,60,0.15);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease;
+}
+.back-to-top:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(25,200,185,0.25);
+  border-color: #19c8b9;
+}
+html.dark .back-to-top {
+  background: linear-gradient(135deg, rgba(58,49,37,0.9), rgba(43,36,24,0.85));
+  border-color: rgba(200,160,80,0.3);
+  color: #c0b090;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+html.dark .back-to-top:hover {
+  border-color: #68c8b8;
+  box-shadow: 0 4px 16px rgba(104,200,184,0.3);
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ Shooting star (dark mode) ═══ */
+html.dark .shooting-star {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9997;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.6), 0 0 20px 3px rgba(200,220,255,0.2);
+  animation: shoot 1.2s ease-out forwards;
+  opacity: 0;
+}
+@keyframes shoot {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  5%   { opacity: 1; }
+  70%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(-300px, 200px); }
+}
+
+/* ═══ Background gradient drift (dark mode) ═══ */
+html.dark body {
+  background: linear-gradient(180deg, #252018 0%, #2a241a 50%, #221d14 100%);
+  background-size: 100% 200%;
+  animation: bgDrift 20s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* ═══ Search modal entrance ═══ */
+.animal-modal[class*="open"] [class*="animal-modal-content"] {
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* ═══ Tag hover bounce ═══ */
+.blog-post-tag, .blog-skill-tag {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
+}
+.blog-post-tag:hover, .blog-skill-tag:hover {
+  transform: scale(1.12);
+}
+
 /* Mobile header */
 @media (max-width: 768px) {
   .header-nav-desktop {
@@ -52,5 +293,12 @@ html.dark .admin-title {
 
   .header-mobile-btn {
     display: block !important;
+  }
+
+  .back-to-top {
+    bottom: 16px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
   }
 }

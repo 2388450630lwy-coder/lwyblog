@@ -62,6 +62,11 @@ function buildHtml(markdown: string): string {
 </div>`.trim();
   };
 
+  renderer.image = function ({ href, title, text }) {
+    const titleAttr = title ? ` title="${title}"` : "";
+    return `<img src="${href}" alt="${text}"${titleAttr} loading="lazy" />`;
+  };
+
   renderer.link = function ({ href, title, text }) {
     const titleAttr = title ? ` title="${title}"` : "";
     const isExternal = /^https?:\/\//.test(href) && !href.includes(location.hostname);
@@ -553,30 +558,9 @@ function Post() {
       {/* Back to top button */}
       {showBackTop && !mobileTocOpen && (
         <button
+          className="back-to-top"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          style={{
-            position: "fixed",
-            bottom: 84,
-            right: 20,
-            zIndex: 44,
-            width: 48,
-            height: 48,
-            borderRadius: "50%",
-            border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
-            background: dark
-              ? "linear-gradient(135deg, #3a3125, #2b2418)"
-              : "linear-gradient(135deg, #fffdf5, #fff8e3)",
-            boxShadow: dark
-              ? "0 4px 16px rgba(0,0,0,0.4)"
-              : "0 4px 16px rgba(180,140,60,0.2)",
-            cursor: "pointer",
-            fontSize: 18,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: dark ? "#f3e9d2" : "#3b2f22",
-            fontFamily: "inherit",
-          }}
+          style={{ bottom: 84 }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m18 15-6-6-6 6"/>

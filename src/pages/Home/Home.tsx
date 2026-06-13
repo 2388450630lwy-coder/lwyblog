@@ -29,11 +29,17 @@ function Home() {
   const { posts } = usePosts();
   const { getCategoryName } = useCategories();
   const stats = [
-    { label: "文章", value: String(posts.length), emoji: "📝" },
-    { label: "分类", value: String(new Set(posts.map((p) => p.categoryId || "default")).size), emoji: "📂" },
-    { label: "标签", value: String(new Set(posts.flatMap((p) => p.tags)).size), emoji: "🏷️" },
-    { label: "始于", value: posts.length > 0 ? String(new Date(posts[posts.length - 1].date).getFullYear()) : "—", emoji: "📅" },
+    { label: "文章", value: "0", emoji: "📝" },
+    { label: "分类", value: "0", emoji: "📂" },
+    { label: "标签", value: "0", emoji: "🏷️" },
+    { label: "始于", value: "0", emoji: "📅" },
   ];
+
+  // Re-trigger count-up when posts load
+  useEffect(() => {
+    if (posts.length > 0) setStatsAnimated(false);
+  }, [posts.length]);
+  const [showCount, setShowCount] = useState(12);
   const [introOpen, setIntroOpen] = useState(
     () => !localStorage.getItem("lwyblog-visited")
   );
@@ -55,6 +61,24 @@ function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // Scroll reveal
+  useEffect(() => {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("reveal--visible");
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -20px 0px" }
+    );
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+    });
+    return () => revealObserver.disconnect();
+  }, [posts, showCount]);
+
   const closeIntro = useCallback(() => {
     setIntroOpen(false);
     localStorage.setItem("lwyblog-visited", "true");
@@ -72,18 +96,99 @@ function Home() {
 
   const s = loadSiteSettings();
 
+  // ── Stats count-up ──
+  const [statsAnimated, setStatsAnimated] = useState(false);
+  useEffect(() => {
+    if (posts.length === 0 || statsAnimated) return;
+    setStatsAnimated(true);
+    const targets = [
+      posts.length,
+      new Set(posts.map((p) => p.categoryId || "default")).size,
+      new Set(posts.flatMap((p) => p.tags)).size,
+      posts.length > 0 ? new Date(posts[posts.length - 1].date).getFullYear() : 0,
+    ];
+    const displays = document.querySelectorAll(".blog-stat-value");
+    const duration = 800;
+    const start = performance.now();
+    const animate = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      displays.forEach((el, i) => {
+        el.textContent = targets[i] > 0 ? String(Math.floor(targets[i] * eased)) : "—";
+      });
+      if (p < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [posts.length, statsAnimated]);
+
+  // ── Hero parallax on scroll ──
+  useEffect(() => {
+    const onScroll = () => {
+      const st = window.scrollY;
+      document.querySelectorAll<HTMLElement>(".blog-hero-cloud, .blog-hero-bird, .blog-hero-sun, .blog-hero-wave").forEach((el) => {
+        const speed = parseFloat(el.getAttribute("data-speed") || "0.3");
+        el.style.transform = `translateY(${st * speed}px)`;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // ── Shooting star (dark mode) ──
+  useEffect(() => {
+    if (!dark) return;
+    const spawn = () => {
+      const star = document.createElement("div");
+      star.className = "shooting-star";
+      star.style.left = (30 + Math.random() * 60) + "%";
+      star.style.top = (Math.random() * 30) + "%";
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), 1500);
+    };
+    const timer = setInterval(spawn, 8000 + Math.random() * 6000);
+    spawn();
+    return () => clearInterval(timer);
+  }, [dark]);
+
   return (
     <div className={`blog ${dark ? "blog--dark" : ""}`}>
       {/* Hero */}
       <section className="blog-hero">
+        {/* Sunrise glow */}
+        <div className="blog-hero-sun" data-speed="0.08" />
+        {/* Clouds */}
+        <div className="blog-hero-clouds">
+          <span className="blog-hero-cloud blog-hero-cloud--1" data-speed="0.12">☁️</span>
+          <span className="blog-hero-cloud blog-hero-cloud--2" data-speed="0.06">☁️</span>
+          <span className="blog-hero-cloud blog-hero-cloud--3" data-speed="0.09">☁️</span>
+        </div>
+        {/* Bird */}
+        <span className="blog-hero-bird" data-speed="0.15">🐦</span>
+        {/* Stars (visible in dark mode via CSS) */}
+        <div className="blog-hero-stars" style={{ opacity: dark ? 0.6 : 0 }}>
+          {["✨","⭐","✨","🌟","✨","⭐","✨"].map((s, i) => (
+            <span
+              key={i}
+              className="blog-hero-star"
+              style={{
+                left: `${8 + (i * 13) % 85}%`,
+                top: `${5 + (i * 17) % 40}%`,
+                animationDelay: `${(i * 0.7).toFixed(1)}s`,
+                animationDuration: `${2.5 + (i % 3) * 1.2}s`,
+                fontSize: `${10 + (i % 3) * 6}px`,
+              }}
+            >{s}</span>
+          ))}
+        </div>
+        {/* Waves */}
+        <div className="blog-hero-wave" />
+
         <div className="blog-hero-title">
           <Typewriter speed={80}>
             <span>{s.heroTypewriter}</span>
           </Typewriter>
         </div>
-        <p className="blog-hero-sub">
-          {s.heroSubtitle}
-        </p>
+        <p className="blog-hero-sub">{s.heroSubtitle}</p>
         <div className="blog-hero-actions">
           <Button type="primary" onClick={() => scrollTo("posts")}>
             阅读文章
@@ -124,10 +229,11 @@ function Home() {
       <section id="posts" className="blog-section">
         <h2 className="blog-section-title">最新文章</h2>
         <div className="blog-posts-grid">
-          {posts.map((post) => (
+          {posts.slice(0, showCount).map((post, idx) => (
             <div
               key={post.id}
-              className="blog-post-card"
+              className="blog-post-card reveal"
+              style={{ animationDelay: `${Math.min(idx * 60, 300)}ms` }}
               onClick={() => navigate(`/posts/${post.id}`)}
             >
               <Card>
@@ -156,6 +262,13 @@ function Home() {
             </div>
           ))}
         </div>
+        {posts.length > showCount && (
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <Button type="primary" onClick={() => setShowCount(c => Math.min(c + 12, posts.length))}>
+              加载更多（{posts.length - showCount} 篇剩余）
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* FAQ */}
