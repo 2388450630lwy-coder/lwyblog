@@ -749,8 +749,28 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="admin-social-save" style={{ marginTop: 20 }}>
+              <div className="admin-social-save" style={{ marginTop: 20, display: "flex", gap: 12 }}>
                 <Button type="primary" onClick={saveSite}>保存</Button>
+                <Button onClick={() => {
+                  const config = {
+                    blogTitle, avatarEmoji, authorName, authorBio,
+                    skillTags, logoEmoji,
+                    heroTypewriter, heroSubtitle,
+                    welcomeModalTitle, welcomeModalBodyTitle, welcomeModalDescription,
+                    subscribeTitle, subscribeDescription, subscribeSuccessMessage,
+                    subscribeSwitchOffLabel, subscribeSwitchOnLabel,
+                    faqItems,
+                    seoTitle, seoDescription, seoKeywords,
+                    footerType, footerCopyright,
+                  };
+                  const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = "site-config.json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  showToast("配置文件已下载，替换 src/data/site-config.json 后部署即可");
+                }}>导出配置</Button>
               </div>
             </div>
           </Card>
