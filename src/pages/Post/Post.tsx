@@ -7,7 +7,7 @@ import { usePosts } from "../../hooks/usePosts";
 import { useCategories } from "../../hooks/useCategories";
 import { loadImages } from "../../utils/images";
 import "../../markdown.css";
-import "highlight.js/styles/atom-one-dark.css";
+import "../../hljs-theme.css";
 import type { PostSection } from "../../data/posts";
 
 function sectionsToMarkdown(sections: PostSection[]): string {
