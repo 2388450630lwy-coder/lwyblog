@@ -5,7 +5,8 @@ import type { TableColumn } from "animal-island-ui";
 import { usePosts } from "../../hooks/usePosts";
 import { useCategories } from "../../hooks/useCategories";
 import type { Post, Category } from "../../data/posts";
-import { DEFAULT_CATEGORY_ID } from "../../data/posts";
+import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
+import { loadLocalData } from "../../utils/localStorage";
 import ArticleForm from "./ArticleForm";
 import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
@@ -467,6 +468,25 @@ export default function Admin() {
             <div className="admin-toolbar">
               <Button type="primary" onClick={handleCreate}>
                 + 新建文章
+              </Button>
+              <Button onClick={() => {
+                const localData = loadLocalData();
+                const exportPosts = localData.posts.filter((lp: Post) =>
+                  !staticPosts.some((sp: Post) => sp.id === lp.id)
+                );
+                if (exportPosts.length === 0) {
+                  showToast("没有需要导出的文章");
+                  return;
+                }
+                const blob = new Blob([JSON.stringify(exportPosts, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = "export-posts.json";
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast(`已导出 ${exportPosts.length} 篇文章`);
+              }}>
+                导出文章
               </Button>
               <div className="admin-filter-group">
                 <Input
