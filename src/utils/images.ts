@@ -1,5 +1,3 @@
-import seedImages from "../data/seed-images.json";
-
 const STORAGE_KEY = "lwyblog-images";
 const SEED_LOADED_KEY = "lwyblog-images-seeded";
 
@@ -10,12 +8,13 @@ export interface StoredImage {
   date: string;
 }
 
-function mergeSeedImages(): void {
+async function mergeSeedImages(): Promise<void> {
   try {
     if (localStorage.getItem(SEED_LOADED_KEY)) return;
     const existing = loadImagesRaw();
     const existingIds = new Set(existing.map((e) => e.id));
-    const newImages = seedImages.filter((s) => !existingIds.has(s.id));
+    const { default: seedImages } = await import("../data/seed-images.json");
+    const newImages = seedImages.filter((s: StoredImage) => !existingIds.has(s.id));
     if (newImages.length > 0) {
       saveImages([...existing, ...newImages]);
     }
