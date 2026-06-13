@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
 export default defineConfig({
-  base: "/lwyblog/",
+  base: "/",
   server: {
     host: "127.0.0.1",
   },
