@@ -58,7 +58,15 @@ function App() {
   }, []);
 
   // Read social data on every render so admin changes appear instantly
-  const social = loadSocial();
+  const siteSettings = loadSiteSettings();
+  // Social: localStorage overrides site-config defaults
+  const localSocial = loadSocial();
+  const social = {
+    github: localSocial.github || siteSettings.social?.github || "",
+    email: localSocial.email || siteSettings.social?.email || "",
+    weibo: localSocial.weibo || siteSettings.social?.weibo || "",
+    bilibili: localSocial.bilibili || siteSettings.social?.bilibili || "",
+  };
   const socialLinks = SOCIAL_PLATFORMS
     .filter((p) => social[p.key])
     .map((p) => ({
@@ -66,7 +74,6 @@ function App() {
       label: p.label,
       url: social[p.key],
     }));
-  const siteSettings = loadSiteSettings();
 
   const handleThemeChange = (checked: boolean) => {
     setTransitioning(true);

@@ -122,7 +122,31 @@ export default function Admin() {
       weibo: weibo.trim(),
       bilibili: bilibili.trim(),
     });
-    showToast("社媒信息已保存");
+    if (ghToken) {
+      const config = {
+        blogTitle, avatarEmoji, authorName, authorBio,
+        skillTags, logoEmoji,
+        heroTypewriter, heroSubtitle,
+        welcomeModalTitle, welcomeModalBodyTitle, welcomeModalDescription,
+        subscribeTitle, subscribeDescription, subscribeSuccessMessage,
+        subscribeSwitchOffLabel, subscribeSwitchOnLabel,
+        faqItems,
+        seoTitle, seoDescription, seoKeywords,
+        footerType, footerCopyright,
+        social: {
+          github: github.trim(),
+          email: emailSocial.trim(),
+          weibo: weibo.trim(),
+          bilibili: bilibili.trim(),
+        },
+      };
+      saveSiteSettings(config);
+      deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
+        showToast(ok ? "已保存并触发部署" : "保存成功，部署失败");
+      });
+    } else {
+      showToast("社媒信息已保存");
+    }
   };
 
   // Save site settings
@@ -137,6 +161,12 @@ export default function Admin() {
       faqItems,
       seoTitle, seoDescription, seoKeywords,
       footerType, footerCopyright,
+      social: {
+        github: github.trim(),
+        email: emailSocial.trim(),
+        weibo: weibo.trim(),
+        bilibili: bilibili.trim(),
+      },
     };
     saveSiteSettings(config);
     // Auto-deploy if token is set
@@ -158,10 +188,11 @@ export default function Admin() {
   useEffect(() => {
     if (authed) {
       const data = loadSocial();
-      setGithub(data.github || "");
-      setEmailSocial(data.email || "");
-      setWeibo(data.weibo || "");
-      setBilibili(data.bilibili || "");
+      const site = loadSiteSettings();
+      setGithub(data.github || site.social?.github || "");
+      setEmailSocial(data.email || site.social?.email || "");
+      setWeibo(data.weibo || site.social?.weibo || "");
+      setBilibili(data.bilibili || site.social?.bilibili || "");
     }
   }, [authed]);
 
@@ -961,6 +992,12 @@ export default function Admin() {
                     faqItems,
                     seoTitle, seoDescription, seoKeywords,
                     footerType, footerCopyright,
+                    social: {
+                      github: github.trim(),
+                      email: emailSocial.trim(),
+                      weibo: weibo.trim(),
+                      bilibili: bilibili.trim(),
+                    },
                   };
                   saveSiteSettings(config);
                   if (ghToken) {

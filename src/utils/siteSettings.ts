@@ -35,6 +35,14 @@ export interface SiteSettings {
   // Footer
   footerType: string;
   footerCopyright: string;
+
+  // Social links
+  social: {
+    github: string;
+    email: string;
+    weibo: string;
+    bilibili: string;
+  };
 }
 
 import siteConfig from "../data/site-config.json";

@@ -37,5 +37,11 @@
   "seoDescription": "",
   "seoKeywords": "博客，游戏，Unity",
   "footerType": "tree",
-  "footerCopyright": "blog by lwy"
+  "footerCopyright": "blog by lwy",
+  "social": {
+    "github": "",
+    "email": "",
+    "weibo": "",
+    "bilibili": ""
+  }
 }
