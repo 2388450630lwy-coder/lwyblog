@@ -43,6 +43,9 @@ export interface SiteSettings {
     weibo: string;
     bilibili: string;
   };
+
+  // Categories
+  categories?: { id: string; name: string }[];
 }
 
 import siteConfig from "../data/site-config.json";

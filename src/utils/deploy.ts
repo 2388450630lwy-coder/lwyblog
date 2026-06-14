@@ -60,8 +60,16 @@ export async function deploySiteConfig(json: string): Promise<boolean> {
   return commitFile("src/data/site-config.json", json, "deploy: 更新站点配置", token);
 }
 
-export async function deployPosts(postsJson: string): Promise<boolean> {
+export async function deployUserPosts(postsJson: string): Promise<boolean> {
   const token = getToken();
   if (!token) return false;
-  return commitFile("src/data/export-posts.json", postsJson, "deploy: 更新文章", token);
+  return commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token);
+}
+
+export async function deploySiteAndPosts(configJson: string, postsJson: string): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  const ok1 = await commitFile("src/data/site-config.json", configJson, "deploy: 更新站点配置", token);
+  const ok2 = await commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token);
+  return ok1 && ok2;
 }

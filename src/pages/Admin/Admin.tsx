@@ -7,7 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
 import { loadLocalData } from "../../utils/localStorage";
-import { deploySiteConfig, setDeployToken, getDeployToken } from "../../utils/deploy";
+import { deploySiteAndPosts, setDeployToken, getDeployToken } from "../../utils/deploy";
 import ArticleForm from "./ArticleForm";
 import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
@@ -114,43 +114,9 @@ export default function Admin() {
     setTimeout(() => setToastMsg(""), 2000);
   };
 
-  // Save social media data to localStorage
-  const saveSocial = () => {
-    persistSocial({
-      github: github.trim(),
-      email: emailSocial.trim(),
-      weibo: weibo.trim(),
-      bilibili: bilibili.trim(),
-    });
-    if (ghToken) {
-      const config = {
-        blogTitle, avatarEmoji, authorName, authorBio,
-        skillTags, logoEmoji,
-        heroTypewriter, heroSubtitle,
-        welcomeModalTitle, welcomeModalBodyTitle, welcomeModalDescription,
-        subscribeTitle, subscribeDescription, subscribeSuccessMessage,
-        subscribeSwitchOffLabel, subscribeSwitchOnLabel,
-        faqItems,
-        seoTitle, seoDescription, seoKeywords,
-        footerType, footerCopyright,
-        social: {
-          github: github.trim(),
-          email: emailSocial.trim(),
-          weibo: weibo.trim(),
-          bilibili: bilibili.trim(),
-        },
-      };
-      saveSiteSettings(config);
-      deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
-        showToast(ok ? "已保存并触发部署" : "保存成功，部署失败");
-      });
-    } else {
-      showToast("社媒信息已保存");
-    }
-  };
-
-  // Save site settings
-  const saveSite = () => {
+  // Deploy helper
+  const tryDeploy = (msg: string) => {
+    if (!ghToken) { showToast(msg); return; }
     const config = {
       blogTitle, avatarEmoji, authorName, authorBio,
       skillTags, logoEmoji,
@@ -161,22 +127,31 @@ export default function Admin() {
       faqItems,
       seoTitle, seoDescription, seoKeywords,
       footerType, footerCopyright,
-      social: {
-        github: github.trim(),
-        email: emailSocial.trim(),
-        weibo: weibo.trim(),
-        bilibili: bilibili.trim(),
-      },
+      social: { github: github.trim(), email: emailSocial.trim(), weibo: weibo.trim(), bilibili: bilibili.trim() },
+      categories,
     };
     saveSiteSettings(config);
-    // Auto-deploy if token is set
-    if (ghToken) {
-      deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
-        showToast(ok ? "已保存并触发部署，1-2 分钟后生效" : "保存成功，部署失败");
-      });
-    } else {
-      showToast("站点设置已保存");
-    }
+    const localData = loadLocalData();
+    const postsJson = JSON.stringify(localData.posts, null, 2);
+    deploySiteAndPosts(JSON.stringify(config, null, 2), postsJson).then(ok => {
+      showToast(ok ? msg + "，已触发部署" : msg + "，部署失败");
+    });
+  };
+
+  // Save social media data to localStorage
+  const saveSocial = () => {
+    persistSocial({
+      github: github.trim(),
+      email: emailSocial.trim(),
+      weibo: weibo.trim(),
+      bilibili: bilibili.trim(),
+    });
+    tryDeploy("社媒信息已保存");
+  };
+
+  // Save site settings
+  const saveSite = () => {
+    tryDeploy("站点设置已保存");
   };
 
   // Load images when switching to images tab
@@ -282,22 +257,21 @@ export default function Admin() {
   function confirmDelete() {
     if (postToDelete) {
       deletePost(postToDelete.id);
-      showToast("文章已删除");
     }
     setDeleteConfirmOpen(false);
     setPostToDelete(null);
+    tryDeploy("文章已删除");
   }
 
   function handleSave(data: Post | Omit<Post, "id">) {
     if ("id" in data) {
       updatePost(data as Post);
-      showToast("文章已更新");
     } else {
       addPost(data);
-      showToast("文章已创建");
     }
     setFormOpen(false);
     setEditingPost(null);
+    tryDeploy("id" in data ? "文章已更新" : "文章已创建");
   }
 
   // Category handlers
@@ -309,17 +283,17 @@ export default function Admin() {
   function saveEditCat() {
     if (editingCatId && editingCatName.trim()) {
       updateCategory({ id: editingCatId, name: editingCatName.trim() });
-      showToast("分类已更新");
     }
     setEditingCatId(null);
     setEditingCatName("");
+    tryDeploy("分类已更新");
   }
 
   function handleAddCategory() {
     if (newCatName.trim()) {
       addCategory(newCatName.trim());
       setNewCatName("");
-      showToast("分类已添加");
+      tryDeploy("分类已添加");
     }
   }
 
@@ -1001,7 +975,8 @@ export default function Admin() {
                   };
                   saveSiteSettings(config);
                   if (ghToken) {
-                    deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
+                    const localData = loadLocalData();
+                    deploySiteAndPosts(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2)).then(ok => {
                       showToast(ok ? "推送成功！1-2 分钟后生效" : "推送失败，请检查 Token");
                     });
                   } else {
@@ -1042,8 +1017,8 @@ export default function Admin() {
         onOk={() => {
           if (catDeleteConfirm) {
             deleteCategory(catDeleteConfirm.id);
-            showToast("分类已删除");
             setCatDeleteConfirm(null);
+            tryDeploy("分类已删除");
           }
         }}
         title="确认删除分类"

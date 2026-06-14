@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import type { Post } from "../data/posts";
 import { posts as staticPosts } from "../data/posts";
 import { loadLocalData, saveLocalData, generateId } from "../utils/localStorage";
+import userPosts from "../data/user-posts.json";
 
 export interface UsePostsReturn {
   posts: Post[];
@@ -22,6 +23,13 @@ export function usePosts(): UsePostsReturn {
       if (localData.deletedStaticIds.includes(sp.id)) continue;
       if (localIds.has(sp.id)) continue;
       result.push(sp);
+    }
+
+    // Merge deployed user posts
+    for (const up of (userPosts as Post[])) {
+      if (localData.deletedStaticIds.includes(up.id)) continue;
+      if (localIds.has(up.id)) continue;
+      result.push(up);
     }
 
     result.sort((a, b) => b.date.localeCompare(a.date));

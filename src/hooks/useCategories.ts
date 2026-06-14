@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import type { Category } from "../data/posts";
 import { DEFAULT_CATEGORY_ID, DEFAULT_CATEGORY_NAME } from "../data/posts";
 import { loadLocalData, saveLocalData, generateId } from "../utils/localStorage";
+import { loadSiteSettings } from "../utils/siteSettings";
 
 export interface UseCategoriesReturn {
   categories: Category[];
@@ -24,7 +25,15 @@ const SEED_CATEGORIES: Category[] = [
 function ensureCategories(localData: ReturnType<typeof loadLocalData>): Category[] {
   if (!localData.categories) localData.categories = [];
   let changed = false;
-  for (const seed of SEED_CATEGORIES) {
+  // Merge seed + site-config categories
+  const siteSettings = loadSiteSettings();
+  const allSeeds = [...SEED_CATEGORIES, ...(siteSettings.categories || [])];
+  const seen = new Set<string>();
+  const deduped: Category[] = [];
+  for (const c of allSeeds) {
+    if (!seen.has(c.id)) { deduped.push(c); seen.add(c.id); }
+  }
+  for (const seed of deduped) {
     if (!localData.categories.some((c: Category) => c.id === seed.id)) {
       localData.categories.push(seed);
       changed = true;
