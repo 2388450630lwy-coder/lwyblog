@@ -973,6 +973,7 @@ export default function Admin() {
                       bilibili: bilibili.trim(),
                     },
                   };
+                  persistSocial(config.social);
                   saveSiteSettings(config);
                   if (ghToken) {
                     const localData = loadLocalData();
