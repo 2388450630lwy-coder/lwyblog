@@ -62,7 +62,7 @@ export default function Admin() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newCatName, setNewCatName] = useState("");
   const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
-  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social" | "site" | "homepage">("posts");
+  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social" | "site" | "homepage" | "deploy">("posts");
 
   // Social media state
   const [github, setGithub] = useState("");
@@ -419,6 +419,7 @@ export default function Admin() {
     { key: "social" as const, label: "社媒信息", icon: "🔗" },
     { key: "site" as const, label: "站点信息", icon: "🏝" },
     { key: "homepage" as const, label: "首页文案", icon: "📋" },
+    { key: "deploy" as const, label: "推送部署", icon: "🚀" },
   ];
 
   // ----- Admin panel -----
@@ -451,14 +452,6 @@ export default function Admin() {
           ))}
         </nav>
         <div className="admin-sidebar-footer">
-          <div style={{ marginBottom: 8 }}>
-            <Input
-              value={ghToken}
-              onChange={(e) => { setGhToken(e.target.value); setDeployToken(e.target.value); }}
-              placeholder="GitHub Token (自动部署)"
-              style={{ fontSize: 11 }}
-            />
-          </div>
           <Button type="text" onClick={() => navigate("/")}>
             返回博客
           </Button>
@@ -929,6 +922,55 @@ export default function Admin() {
 
               <div className="admin-social-save" style={{ marginTop: 20 }}>
                 <Button type="primary" onClick={saveSite}>保存</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Deploy Tab */}
+        {adminTab === "deploy" && (
+          <Card>
+            <div className="admin-card-inner">
+              <h3>🚀 推送部署</h3>
+              <p style={{ fontSize: 13, opacity: 0.6, margin: "8px 0 16px" }}>
+                配置 GitHub Token 后，站点设置保存时自动推送部署。
+              </p>
+              <div className="admin-social-list">
+                <div className="admin-social-row">
+                  <label>GitHub Token</label>
+                  <Input
+                    value={ghToken}
+                    onChange={(e) => { setGhToken(e.target.value); setDeployToken(e.target.value); }}
+                    placeholder="ghp_xxxxxxxxxxxx"
+                  />
+                </div>
+              </div>
+              <p style={{ fontSize: 12, opacity: 0.4, margin: "8px 0" }}>
+                在 GitHub Settings → Developer settings → Personal access tokens 创建，
+                勾选 repo 权限即可。
+              </p>
+              <div className="admin-social-save" style={{ marginTop: 12 }}>
+                <Button type="primary" onClick={() => {
+                  const config = {
+                    blogTitle, avatarEmoji, authorName, authorBio,
+                    skillTags, logoEmoji,
+                    heroTypewriter, heroSubtitle,
+                    welcomeModalTitle, welcomeModalBodyTitle, welcomeModalDescription,
+                    subscribeTitle, subscribeDescription, subscribeSuccessMessage,
+                    subscribeSwitchOffLabel, subscribeSwitchOnLabel,
+                    faqItems,
+                    seoTitle, seoDescription, seoKeywords,
+                    footerType, footerCopyright,
+                  };
+                  saveSiteSettings(config);
+                  if (ghToken) {
+                    deploySiteConfig(JSON.stringify(config, null, 2)).then(ok => {
+                      showToast(ok ? "推送成功！1-2 分钟后生效" : "推送失败，请检查 Token");
+                    });
+                  } else {
+                    showToast("请先填写 GitHub Token");
+                  }
+                }}>🚀 一键推送</Button>
               </div>
             </div>
           </Card>
