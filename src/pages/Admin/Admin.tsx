@@ -134,8 +134,8 @@ export default function Admin() {
     saveSiteSettings(config);
     const localData = loadLocalData();
     const images = loadImages();
-    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(ok => {
-      showToast(ok ? msg + "，已触发部署" : msg + "，部署失败");
+    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(result => {
+      showToast(result.ok ? msg + "，已触发部署" : msg + "，部署失败：" + (result.error || "未知错误"));
     });
   };
 
@@ -634,7 +634,9 @@ export default function Admin() {
                         showToast("图片已删除");
                         if (ghToken) {
                           const images = loadImages();
-                          deployImages(JSON.stringify(images, null, 2));
+                          deployImages(JSON.stringify(images, null, 2)).then(result => {
+                            if (!result.ok) showToast("图片部署失败：" + (result.error || "未知错误"));
+                          });
                         }
                       }}>
                         删除
@@ -981,8 +983,8 @@ export default function Admin() {
                   if (ghToken) {
                     const localData = loadLocalData();
                     const images = loadImages();
-                    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(ok => {
-                      showToast(ok ? "推送成功！1-2 分钟后生效" : "推送失败，请检查 Token");
+                    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(result => {
+                      showToast(result.ok ? "推送成功！1-2 分钟后生效" : "推送失败：" + (result.error || "未知错误"));
                     });
                   } else {
                     showToast("请先填写 GitHub Token");
