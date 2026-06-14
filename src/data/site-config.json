@@ -39,10 +39,39 @@
   "footerType": "tree",
   "footerCopyright": "blog by lwy",
   "social": {
-    "github": "",
-    "email": "",
+    "github": "https://github.com/2388450630lwy-coder",
+    "email": "2388450630lwy@gmail.com",
     "weibo": "",
-    "bilibili": ""
+    "bilibili": "https://space.bilibili.com/454159498?spm_id_from=333.1007.0.0"
   },
-  "categories": []
+  "categories": [
+    {
+      "id": "default",
+      "name": "默认分类"
+    },
+    {
+      "id": "linux",
+      "name": "Linux"
+    },
+    {
+      "id": "unity",
+      "name": "Unity"
+    },
+    {
+      "id": "algorithm",
+      "name": "算法"
+    },
+    {
+      "id": "pattern",
+      "name": "设计模式"
+    },
+    {
+      "id": "insight",
+      "name": "心得"
+    },
+    {
+      "id": "tools",
+      "name": "Tools"
+    }
+  ]
 }
