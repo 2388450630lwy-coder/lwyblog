@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Switch, Modal, Input } from "animal-island-ui";
-import { usePosts } from "../hooks/usePosts";
+import { useBlog } from "../context/BlogContext";
 import { loadSiteSettings } from "../utils/siteSettings";
 
 interface HeaderProps {
   dark: boolean;
   onThemeChange: (checked: boolean) => void;
+  onNavPreload?: (path: string) => void;
 }
 
 const NAV_ITEMS = [
@@ -16,13 +17,14 @@ const NAV_ITEMS = [
   { label: "归档", path: "/archive" },
 ];
 
-export default function Header({ dark, onThemeChange }: HeaderProps) {
+export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { posts } = usePosts();
+  const { posts } = useBlog();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     if (searchOpen) {
       setTimeout(() => {
@@ -157,6 +159,7 @@ export default function Header({ dark, onThemeChange }: HeaderProps) {
                 key={item.path}
                 type="text"
                 onClick={() => navigate(item.path)}
+                onMouseEnter={() => onNavPreload?.(item.path)}
               >
                 {item.label}
               </Button>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "animal-island-ui";
-import { usePosts } from "../../hooks/usePosts";
+import { useBlog } from "../../context/BlogContext";
 import "./Tags.less";
 
 interface TagStat {
@@ -11,7 +11,7 @@ interface TagStat {
 
 export default function Tags() {
   const navigate = useNavigate();
-  const { posts } = usePosts();
+  const { posts } = useBlog();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );

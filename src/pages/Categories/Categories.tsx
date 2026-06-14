@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "animal-island-ui";
-import { usePosts } from "../../hooks/usePosts";
-import { useCategories } from "../../hooks/useCategories";
+import { useBlog } from "../../context/BlogContext";
 import type { PostSection } from "../../data/posts";
 import "./Categories.less";
 
@@ -38,8 +37,7 @@ function CategoryIcon({ color, size = 28 }: { color: string; size?: number }) {
 
 export default function Categories() {
   const navigate = useNavigate();
-  const { posts } = usePosts();
-  const { categories } = useCategories();
+  const { posts, categories } = useBlog();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );

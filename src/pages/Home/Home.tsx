@@ -11,8 +11,7 @@ import {
   Switch,
   Time,
 } from "animal-island-ui";
-import { usePosts } from "../../hooks/usePosts";
-import { useCategories } from "../../hooks/useCategories";
+import { useBlog } from "../../context/BlogContext";
 import { loadSiteSettings } from "../../utils/siteSettings";
 import type { PostSection } from "../../data/posts";
 import "./Home.less";
@@ -26,8 +25,7 @@ function readTime(sections: PostSection[]): number {
 
 function Home() {
   const navigate = useNavigate();
-  const { posts } = usePosts();
-  const { getCategoryName } = useCategories();
+  const { posts, getCategoryName } = useBlog();
   const stats = [
     { label: "文章", value: "0", emoji: "📝" },
     { label: "分类", value: "0", emoji: "📂" },

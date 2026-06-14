@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Divider } from "animal-island-ui";
 import { marked } from "marked";
 import hljs from "highlight.js";
-import { usePosts } from "../../hooks/usePosts";
-import { useCategories } from "../../hooks/useCategories";
+import { useBlog } from "../../context/BlogContext";
 import { loadImages } from "../../utils/images";
 import "../../markdown.css";
 import "../../hljs-theme.css";
@@ -108,8 +107,7 @@ function injectHeadingIds(html: string): { html: string; toc: TocItem[] } {
 function Post() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { posts } = usePosts();
-  const { getCategoryName } = useCategories();
+  const { posts, getCategoryName } = useBlog();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePosts } from "../../hooks/usePosts";
-import type { PostSection } from "../../data/posts";
+import { useBlog } from "../../context/BlogContext";
+import type { PostSection, Post } from "../../data/posts";
 import "./Archive.less";
 
 function readTime(sections: PostSection[]): number {
@@ -20,12 +20,12 @@ interface GroupedPosts {
   year: string;
   months: {
     month: string;
-    posts: ReturnType<typeof usePosts>["posts"];
+    posts: Post[];
   }[];
   total: number;
 }
 
-function useGroupedPosts(posts: ReturnType<typeof usePosts>["posts"]): GroupedPosts[] {
+function useGroupedPosts(posts: Post[]): GroupedPosts[] {
   return useMemo(() => {
     const map: Record<string, Record<string, typeof posts>> = {};
 
@@ -58,7 +58,7 @@ const MONTH_NAMES: Record<string, string> = {
 
 export default function Archive() {
   const navigate = useNavigate();
-  const { posts } = usePosts();
+  const { posts } = useBlog();
   const grouped = useGroupedPosts(posts);
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")

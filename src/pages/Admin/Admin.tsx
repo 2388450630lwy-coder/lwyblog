@@ -2,8 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Modal, Table, Select, Input } from "animal-island-ui";
 import type { TableColumn } from "animal-island-ui";
-import { usePosts } from "../../hooks/usePosts";
-import { useCategories } from "../../hooks/useCategories";
+import { useBlog } from "../../context/BlogContext";
 import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
 import { loadLocalData } from "../../utils/localStorage";
@@ -28,8 +27,7 @@ function setAuth() {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const { posts, addPost, updatePost, deletePost } = usePosts();
-  const { categories, addCategory, updateCategory, deleteCategory, getCategoryName } = useCategories();
+  const { posts, categories, addPost, updatePost, deletePost, addCategory, updateCategory, deleteCategory, getCategoryName } = useBlog();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
