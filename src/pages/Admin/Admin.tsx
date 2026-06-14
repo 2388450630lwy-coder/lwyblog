@@ -7,7 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import type { Post, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
 import { loadLocalData } from "../../utils/localStorage";
-import { deploySiteAndPosts, setDeployToken, getDeployToken } from "../../utils/deploy";
+import { deployAll, deployImages, setDeployToken, getDeployToken } from "../../utils/deploy";
 import ArticleForm from "./ArticleForm";
 import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
@@ -135,8 +135,8 @@ export default function Admin() {
     };
     saveSiteSettings(config);
     const localData = loadLocalData();
-    const postsJson = JSON.stringify(localData.posts, null, 2);
-    deploySiteAndPosts(JSON.stringify(config, null, 2), postsJson).then(ok => {
+    const images = loadImages();
+    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(ok => {
       showToast(ok ? msg + "，已触发部署" : msg + "，部署失败");
     });
   };
@@ -634,6 +634,10 @@ export default function Admin() {
                         deleteImage(img.id);
                         refreshImages();
                         showToast("图片已删除");
+                        if (ghToken) {
+                          const images = loadImages();
+                          deployImages(JSON.stringify(images, null, 2));
+                        }
                       }}>
                         删除
                       </Button>
@@ -978,7 +982,8 @@ export default function Admin() {
                   saveSiteSettings(config);
                   if (ghToken) {
                     const localData = loadLocalData();
-                    deploySiteAndPosts(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2)).then(ok => {
+                    const images = loadImages();
+                    deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(ok => {
                       showToast(ok ? "推送成功！1-2 分钟后生效" : "推送失败，请检查 Token");
                     });
                   } else {

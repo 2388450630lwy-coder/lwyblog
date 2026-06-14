@@ -66,10 +66,28 @@ export async function deployUserPosts(postsJson: string): Promise<boolean> {
   return commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token);
 }
 
+export async function deployImages(imagesJson: string): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  return commitFile("src/data/user-images.json", imagesJson, "deploy: 更新图片", token);
+}
+
 export async function deploySiteAndPosts(configJson: string, postsJson: string): Promise<boolean> {
   const token = getToken();
   if (!token) return false;
   const ok1 = await commitFile("src/data/site-config.json", configJson, "deploy: 更新站点配置", token);
   const ok2 = await commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token);
   return ok1 && ok2;
+}
+
+/** Deploy everything: config + posts + images */
+export async function deployAll(configJson: string, postsJson: string, imagesJson: string): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  const [ok1, ok2, ok3] = await Promise.all([
+    commitFile("src/data/site-config.json", configJson, "deploy: 更新站点配置", token),
+    commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token),
+    commitFile("src/data/user-images.json", imagesJson, "deploy: 更新图片", token),
+  ]);
+  return ok1 && ok2 && ok3;
 }

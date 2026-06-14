@@ -13,8 +13,12 @@ async function mergeSeedImages(): Promise<void> {
     if (localStorage.getItem(SEED_LOADED_KEY)) return;
     const existing = loadImagesRaw();
     const existingIds = new Set(existing.map((e) => e.id));
-    const { default: seedImages } = await import("../data/seed-images.json");
-    const newImages = seedImages.filter((s: StoredImage) => !existingIds.has(s.id));
+    const [{ default: seedImages }, { default: userImages }] = await Promise.all([
+      import("../data/seed-images.json"),
+      import("../data/user-images.json"),
+    ]);
+    const allSeed = [...seedImages, ...userImages];
+    const newImages = allSeed.filter((s: StoredImage) => !existingIds.has(s.id));
     if (newImages.length > 0) {
       saveImages([...existing, ...newImages]);
     }
