@@ -117,7 +117,10 @@ export default function Admin() {
   // Deploy helper
   const tryDeploy = (msg: string) => {
     if (!ghToken) { showToast(msg); return; }
+    // Merge with existing config to preserve new fields
+    const existing = loadSiteSettings();
     const config = {
+      ...existing,
       blogTitle, avatarEmoji, authorName, authorBio,
       skillTags, logoEmoji,
       heroTypewriter, heroSubtitle,
@@ -127,7 +130,7 @@ export default function Admin() {
       faqItems,
       seoTitle, seoDescription, seoKeywords,
       footerType, footerCopyright,
-      social: { github: github.trim(), email: emailSocial.trim(), weibo: weibo.trim(), bilibili: bilibili.trim() },
+      social: { ...existing.social, github: github.trim(), email: emailSocial.trim(), weibo: weibo.trim(), bilibili: bilibili.trim() },
       categories,
     };
     saveSiteSettings(config);
@@ -956,7 +959,9 @@ export default function Admin() {
               </p>
               <div className="admin-social-save" style={{ marginTop: 12 }}>
                 <Button type="primary" onClick={() => {
+                  const existing = loadSiteSettings();
                   const config = {
+                    ...existing,
                     blogTitle, avatarEmoji, authorName, authorBio,
                     skillTags, logoEmoji,
                     heroTypewriter, heroSubtitle,
@@ -966,12 +971,8 @@ export default function Admin() {
                     faqItems,
                     seoTitle, seoDescription, seoKeywords,
                     footerType, footerCopyright,
-                    social: {
-                      github: github.trim(),
-                      email: emailSocial.trim(),
-                      weibo: weibo.trim(),
-                      bilibili: bilibili.trim(),
-                    },
+                    social: { ...existing.social, github: github.trim(), email: emailSocial.trim(), weibo: weibo.trim(), bilibili: bilibili.trim() },
+                    categories,
                   };
                   persistSocial(config.social);
                   saveSiteSettings(config);
