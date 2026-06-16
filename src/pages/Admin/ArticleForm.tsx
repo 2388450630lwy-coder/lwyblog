@@ -254,7 +254,7 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
       {/* Markdown body */}
       <div
         style={{
-          border: errors.markdown ? "1px solid #e06040" : "1px solid #e8dfc5",
+          border: errors.markdown ? "1px solid #e06040" : "1px solid #d4d4dc",
           borderRadius: 12,
           padding: 14,
         }}
@@ -294,7 +294,7 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
       {/* Takeaways */}
       <div
         style={{
-          border: "1px solid #e8dfc5",
+          border: "1px solid #d4d4dc",
           borderRadius: 12,
           padding: 14,
         }}

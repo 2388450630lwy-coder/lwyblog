@@ -13,13 +13,13 @@ function readTime(sections: PostSection[]): number {
 }
 
 const CAT_COLORS = [
-  "#d98c3b",
+  "#7a8cb8",
   "#19c8b9",
   "#86d67a",
-  "#c08040",
-  "#e09060",
+  "#8a88c0",
+  "#6888aa",
   "#5aaf8a",
-  "#b08050",
+  "#6e88b0",
   "#3db8a0",
 ];
 
@@ -97,10 +97,7 @@ export default function Categories() {
   return (
     <div
       className={dark ? "categories categories--dark" : "categories"}
-      style={{
-        background: dark ? "#2a241a" : "transparent",
-        color: dark ? "#f3e9d2" : "#3b2f22",
-      }}
+      style={{ color: dark ? "#e4e4ea" : "#3b2f22" }}
     >
       <div className="categories-container">
         <h1 className="categories-title">📂 文章分类</h1>

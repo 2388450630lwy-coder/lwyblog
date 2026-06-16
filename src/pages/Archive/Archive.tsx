@@ -84,10 +84,7 @@ export default function Archive() {
   return (
     <div
       className={dark ? "archive archive--dark" : "archive"}
-      style={{
-        background: dark ? "#2a241a" : "transparent",
-        color: dark ? "#f3e9d2" : "#3b2f22",
-      }}
+      style={{ color: dark ? "#e4e4ea" : "#3b2f22" }}
     >
       <div className="archive-container">
         <h1 className="archive-title">📅 文章归档</h1>

@@ -120,14 +120,14 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
           width: "100%",
           margin: "0 auto 24px",
           background: dark
-            ? "linear-gradient(135deg, #3a3125 0%, #2b2418 100%)"
-            : "linear-gradient(135deg, #fffdf5 0%, #fff8e3 100%)",
-          border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
+            ? "linear-gradient(135deg, #2e2e36 0%, #25252e 100%)"
+            : "linear-gradient(135deg, #fafafb 0%, #f4f4f7 100%)",
+          border: dark ? "2px solid #3e3e4a" : "2px solid #d4d4dc",
           borderRadius: 20,
           boxShadow: dark
             ? "0 6px 20px -10px rgba(0, 0, 0, 0.4)"
-            : "0 6px 20px -10px rgba(180, 140, 60, 0.25)",
-          color: dark ? "#f3e9d2" : "#3b2f22",
+            : "0 6px 20px -10px rgba(140, 140, 165, 0.25)",
+          color: dark ? "#e4e4ea" : "#2a2a35",
         }}
       >
         <span
@@ -188,7 +188,7 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
             fontSize: 22,
             cursor: "pointer",
             padding: 4,
-            color: dark ? "#f3e9d2" : "#3b2f22",
+            color: dark ? "#e4e4ea" : "#2a2a35",
             fontFamily: "inherit",
           }}
         >
@@ -219,12 +219,12 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
               padding: "20px 16px",
               borderRadius: 20,
               background: dark
-                ? "linear-gradient(135deg, #3a3125 0%, #2b2418 100%)"
-                : "linear-gradient(135deg, #fffdf5 0%, #fff8e3 100%)",
-              border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
+                ? "linear-gradient(135deg, #2e2e36 0%, #25252e 100%)"
+                : "linear-gradient(135deg, #fafafb 0%, #f4f4f7 100%)",
+              border: dark ? "2px solid #3e3e4a" : "2px solid #d4d4dc",
               boxShadow: dark
                 ? "0 6px 20px -10px rgba(0, 0, 0, 0.4)"
-                : "0 6px 20px -10px rgba(180, 140, 60, 0.25)",
+                : "0 6px 20px -10px rgba(140, 140, 165, 0.25)",
               display: "flex",
               flexDirection: "column",
               gap: 4,
@@ -299,7 +299,7 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
                         padding: "4px 12px",
                         borderRadius: 14,
                         cursor: "pointer",
-                        background: dark ? "rgba(200,160,80,0.15)" : "rgba(180,140,60,0.1)",
+                        background: dark ? "rgba(160,160,180,0.15)" : "rgba(140,140,165,0.1)",
                       }}
                     >
                       {h}
@@ -335,24 +335,24 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
                     borderRadius: 12,
                     cursor: "pointer",
                     marginBottom: 8,
-                    background: dark ? "linear-gradient(135deg, rgba(58,49,37,0.3), rgba(43,36,24,0.3))"
-                      : "linear-gradient(135deg, rgba(255,253,245,0.5), rgba(255,248,227,0.5))",
-                    border: dark ? "1px solid rgba(200,160,80,0.08)" : "1px solid rgba(180,140,60,0.08)",
+                    background: dark ? "linear-gradient(135deg, rgba(42,42,48,0.3), rgba(34,34,40,0.3))"
+                      : "linear-gradient(135deg, rgba(250,250,254,0.5), rgba(246,246,252,0.5))",
+                    border: dark ? "1px solid rgba(160,160,180,0.08)" : "1px solid rgba(140,140,165,0.08)",
                     transition: "all 0.15s",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.background = dark
-                      ? "linear-gradient(135deg, rgba(58,49,37,0.6), rgba(43,36,24,0.6))"
-                      : "linear-gradient(135deg, rgba(255,253,245,0.85), rgba(255,248,227,0.85))";
+                      ? "linear-gradient(135deg, rgba(42,42,48,0.6), rgba(34,34,40,0.6))"
+                      : "linear-gradient(135deg, rgba(250,250,254,0.85), rgba(246,246,252,0.85))";
                     (e.currentTarget as HTMLElement).style.borderColor = dark
-                      ? "rgba(200,160,80,0.2)" : "rgba(180,140,60,0.2)";
+                      ? "rgba(160,160,180,0.2)" : "rgba(140,140,165,0.2)";
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.background = dark
-                      ? "linear-gradient(135deg, rgba(58,49,37,0.3), rgba(43,36,24,0.3))"
-                      : "linear-gradient(135deg, rgba(255,253,245,0.5), rgba(255,248,227,0.5))";
+                      ? "linear-gradient(135deg, rgba(42,42,48,0.3), rgba(34,34,40,0.3))"
+                      : "linear-gradient(135deg, rgba(250,250,254,0.5), rgba(246,246,252,0.5))";
                     (e.currentTarget as HTMLElement).style.borderColor = dark
-                      ? "rgba(200,160,80,0.08)" : "rgba(180,140,60,0.08)";
+                      ? "rgba(160,160,180,0.08)" : "rgba(140,140,165,0.08)";
                   }}
                 >
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
@@ -383,8 +383,8 @@ export default function Header({ dark, onThemeChange, onNavPreload }: HeaderProp
                           padding: "1px 8px",
                           borderRadius: 8,
                           background: dark
-                            ? "rgba(200,160,80,0.15)"
-                            : "rgba(180,140,60,0.12)",
+                            ? "rgba(160,160,180,0.15)"
+                            : "rgba(140,140,165,0.12)",
                         }}
                       >
                         #{t}

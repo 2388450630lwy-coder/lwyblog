@@ -73,10 +73,7 @@ export default function Tags() {
   return (
     <div
       className={dark ? "tags tags--dark" : "tags"}
-      style={{
-        background: dark ? "#2a241a" : "transparent",
-        color: dark ? "#f3e9d2" : "#3b2f22",
-      }}
+      style={{ color: dark ? "#e4e4ea" : "#3b2f22" }}
     >
       <div className="tags-container">
         <h1 className="tags-title">🏷️ 标签</h1>

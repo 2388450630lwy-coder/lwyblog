@@ -284,10 +284,7 @@ function Post() {
   return (
     <div
       className={`post-page ${dark ? "blog--dark" : ""}`}
-      style={{
-        color: dark ? "#f3e9d2" : "#444",
-        background: dark ? "#2a241a" : "transparent",
-      }}
+      style={{ color: dark ? "#e4e4ea" : "#444" }}
     >
       {/* Reading progress bar */}
       <div
@@ -489,22 +486,22 @@ function Post() {
                   cursor: "pointer",
                   padding: "14px 18px",
                   borderRadius: 14,
-                  background: dark ? "linear-gradient(135deg, rgba(58,49,37,0.5), rgba(43,36,24,0.5))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.7), rgba(255,248,227,0.7))",
-                  border: dark ? "1px solid rgba(200,160,80,0.12)" : "1px solid rgba(180,140,60,0.1)",
+                  background: dark ? "linear-gradient(135deg, rgba(42,42,48,0.5), rgba(34,34,40,0.5))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.7), rgba(246,246,252,0.7))",
+                  border: dark ? "1px solid rgba(160,160,180,0.12)" : "1px solid rgba(140,140,165,0.1)",
                   transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.background = dark ? "linear-gradient(135deg, rgba(58,49,37,0.8), rgba(43,36,24,0.8))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.95), rgba(255,248,227,0.95))";
-                  el.style.borderColor = dark ? "rgba(200,160,80,0.25)" : "rgba(180,140,60,0.25)";
+                  el.style.background = dark ? "linear-gradient(135deg, rgba(42,42,48,0.8), rgba(34,34,40,0.8))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.95), rgba(246,246,252,0.95))";
+                  el.style.borderColor = dark ? "rgba(160,160,180,0.25)" : "rgba(140,140,165,0.25)";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.background = dark ? "linear-gradient(135deg, rgba(58,49,37,0.5), rgba(43,36,24,0.5))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.7), rgba(255,248,227,0.7))";
-                  el.style.borderColor = dark ? "rgba(200,160,80,0.12)" : "rgba(180,140,60,0.1)";
+                  el.style.background = dark ? "linear-gradient(135deg, rgba(42,42,48,0.5), rgba(34,34,40,0.5))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.7), rgba(246,246,252,0.7))";
+                  el.style.borderColor = dark ? "rgba(160,160,180,0.12)" : "rgba(140,140,165,0.1)";
                 }}
               >
                 <div style={{ fontSize: 12, opacity: 0.5, marginBottom: 4 }}>上一篇</div>
@@ -523,22 +520,22 @@ function Post() {
                   padding: "14px 18px",
                   borderRadius: 14,
                   textAlign: "right",
-                  background: dark ? "linear-gradient(135deg, rgba(58,49,37,0.5), rgba(43,36,24,0.5))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.7), rgba(255,248,227,0.7))",
-                  border: dark ? "1px solid rgba(200,160,80,0.12)" : "1px solid rgba(180,140,60,0.1)",
+                  background: dark ? "linear-gradient(135deg, rgba(42,42,48,0.5), rgba(34,34,40,0.5))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.7), rgba(246,246,252,0.7))",
+                  border: dark ? "1px solid rgba(160,160,180,0.12)" : "1px solid rgba(140,140,165,0.1)",
                   transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.background = dark ? "linear-gradient(135deg, rgba(58,49,37,0.8), rgba(43,36,24,0.8))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.95), rgba(255,248,227,0.95))";
-                  el.style.borderColor = dark ? "rgba(200,160,80,0.25)" : "rgba(180,140,60,0.25)";
+                  el.style.background = dark ? "linear-gradient(135deg, rgba(42,42,48,0.8), rgba(34,34,40,0.8))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.95), rgba(246,246,252,0.95))";
+                  el.style.borderColor = dark ? "rgba(160,160,180,0.25)" : "rgba(140,140,165,0.25)";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.background = dark ? "linear-gradient(135deg, rgba(58,49,37,0.5), rgba(43,36,24,0.5))"
-                    : "linear-gradient(135deg, rgba(255,253,245,0.7), rgba(255,248,227,0.7))";
-                  el.style.borderColor = dark ? "rgba(200,160,80,0.12)" : "rgba(180,140,60,0.1)";
+                  el.style.background = dark ? "linear-gradient(135deg, rgba(42,42,48,0.5), rgba(34,34,40,0.5))"
+                    : "linear-gradient(135deg, rgba(250,250,254,0.7), rgba(246,246,252,0.7))";
+                  el.style.borderColor = dark ? "rgba(160,160,180,0.12)" : "rgba(140,140,165,0.1)";
                 }}
               >
                 <div style={{ fontSize: 12, opacity: 0.5, marginBottom: 4 }}>下一篇</div>
@@ -580,17 +577,17 @@ function Post() {
               width: 48,
               height: 48,
               borderRadius: "50%",
-              border: dark ? "2px solid #4a3f2f" : "2px solid #e8dfc5",
+              border: dark ? "2px solid #3e3e4a" : "2px solid #d4d4dc",
               background: dark
                 ? "linear-gradient(135deg, #3a3125, #2b2418)"
                 : "linear-gradient(135deg, #fffdf5, #fff8e3)",
               boxShadow: dark
                 ? "0 4px 16px rgba(0,0,0,0.4)"
-                : "0 4px 16px rgba(180,140,60,0.2)",
+                : "0 4px 16px rgba(140,140,165,0.2)",
               cursor: "pointer",
               fontSize: 20,
               display: "none",
-              color: dark ? "#f3e9d2" : "#3b2f22",
+              color: dark ? "#e4e4ea" : "#3b2f22",
               fontFamily: "inherit",
             }}
           >
@@ -621,8 +618,8 @@ function Post() {
                   overflowY: "auto",
                   padding: "20px 20px 32px",
                   borderRadius: "20px 20px 0 0",
-                  background: dark ? "#2e2820" : "#fdfaf3",
-                  border: dark ? "1px solid #3d352a" : "1px solid #e8ddcc",
+                  background: dark ? "#2e2820" : "#f8f8fa",
+                  border: dark ? "1px solid #2e2e36" : "1px solid #d4d4dc",
                 }}
               >
                 <div style={{
@@ -639,7 +636,7 @@ function Post() {
                       background: "none",
                       fontSize: 18,
                       cursor: "pointer",
-                      color: dark ? "#f3e9d2" : "#3b2f22",
+                      color: dark ? "#e4e4ea" : "#3b2f22",
                       fontFamily: "inherit",
                     }}
                   >
@@ -660,7 +657,7 @@ function Post() {
                             textDecoration: "none",
                             borderRadius: 8,
                             background: activeId === item.id
-                              ? (dark ? "rgba(200,160,80,0.2)" : "rgba(180,140,60,0.15)")
+                              ? (dark ? "rgba(160,160,180,0.2)" : "rgba(140,140,165,0.15)")
                               : "transparent",
                             paddingLeft: item.level === 3 ? 28 : 12,
                           }}

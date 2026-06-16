@@ -116,7 +116,7 @@ function App() {
                 <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
                   <div style={{
                     width: 28, height: 28,
-                    border: "3px solid rgba(180,140,60,0.12)",
+                    border: "3px solid rgba(140,140,165,0.12)",
                     borderTopColor: "#19c8b9",
                     borderRadius: "50%",
                     animation: "spin 0.6s linear infinite",
@@ -158,19 +158,19 @@ function App() {
                           width: 36,
                           height: 36,
                           borderRadius: "50%",
-                          background: dark ? "rgba(255,255,255,0.06)" : "rgba(180,140,60,0.08)",
+                          background: dark ? "rgba(255,255,255,0.06)" : "rgba(140,140,165,0.08)",
                           textDecoration: "none",
                           transition: "all 0.2s",
                           fontSize: 18,
                         }}
                         onMouseEnter={(e) => {
                           const el = e.currentTarget as HTMLElement;
-                          el.style.background = dark ? "rgba(255,255,255,0.12)" : "rgba(180,140,60,0.18)";
+                          el.style.background = dark ? "rgba(255,255,255,0.12)" : "rgba(140,140,165,0.18)";
                           el.style.transform = "translateY(-2px)";
                         }}
                         onMouseLeave={(e) => {
                           const el = e.currentTarget as HTMLElement;
-                          el.style.background = dark ? "rgba(255,255,255,0.06)" : "rgba(180,140,60,0.08)";
+                          el.style.background = dark ? "rgba(255,255,255,0.06)" : "rgba(140,140,165,0.08)";
                           el.style.transform = "translateY(0)";
                         }}
                       >
@@ -188,7 +188,7 @@ function App() {
                   fontWeight: 600,
                   padding: "6px 18px",
                   borderRadius: 16,
-                  color: dark ? "#8b7355" : "#b8a080",
+                  color: dark ? "#7a7a88" : "#9494a0",
                   textDecoration: "none",
                   opacity: 0.6,
                   transition: "opacity 0.15s",
@@ -225,7 +225,7 @@ function App() {
             position: "fixed",
             inset: 0,
             zIndex: 99999,
-            background: dark ? "#2a241a" : "#fffdf5",
+            background: dark ? "#1B1B1D" : "#fffdf5",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -233,7 +233,7 @@ function App() {
         >
           <div style={{
             width: 28, height: 28,
-            border: "3px solid rgba(180,140,60,0.12)",
+            border: "3px solid rgba(140,140,165,0.12)",
             borderTopColor: "#19c8b9",
             borderRadius: "50%",
             animation: "spin 0.6s linear infinite",

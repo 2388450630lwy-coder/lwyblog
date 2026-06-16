@@ -373,8 +373,7 @@ export default function Admin() {
       <div
         className={`admin${dark ? " admin--dark" : ""}`}
         style={{
-          background: dark ? "#2a241a" : "transparent",
-          color: dark ? "#f3e9d2" : "#3b2f22",
+          color: dark ? "#e4e4ea" : "#3b2f22",
           minHeight: "100vh",
           display: "flex",
         }}
@@ -433,8 +432,7 @@ export default function Admin() {
     <div
       className={`admin${dark ? " admin--dark" : ""}`}
       style={{
-        background: dark ? "#2a241a" : "transparent",
-        color: dark ? "#f3e9d2" : "#3b2f22",
+        color: dark ? "#e4e4ea" : "#3b2f22",
         minHeight: "100vh",
         display: "flex",
       }}
@@ -1004,8 +1002,8 @@ export default function Admin() {
               transform: "translateX(-50%)",
               padding: "10px 24px",
               borderRadius: 12,
-              background: dark ? "rgba(58,49,37,0.95)" : "rgba(60,50,30,0.9)",
-              color: "#f3e9d2",
+              background: dark ? "rgba(42,42,48,0.95)" : "rgba(60,50,30,0.9)",
+              color: "#e4e4ea",
               fontSize: 14,
               fontWeight: 600,
               boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
