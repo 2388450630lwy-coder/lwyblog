@@ -15,6 +15,7 @@ const Admin = lazy(() => import("./pages/Admin/Admin"));
 const Categories = lazy(() => import("./pages/Categories/Categories"));
 const Tags = lazy(() => import("./pages/Tags/Tags"));
 const Archive = lazy(() => import("./pages/Archive/Archive"));
+const Search = lazy(() => import("./pages/Search/Search"));
 
 // Preload functions — triggered on nav hover so chunks arrive before click
 const preloadMap: Record<string, () => void> = {
@@ -22,6 +23,7 @@ const preloadMap: Record<string, () => void> = {
   "/tags": () => { import("./pages/Tags/Tags"); },
   "/archive": () => { import("./pages/Archive/Archive"); },
   "/admin": () => { import("./pages/Admin/Admin"); },
+  "/search": () => { import("./pages/Search/Search"); },
 };
 
 function App() {
@@ -130,6 +132,7 @@ function App() {
                   <Route path="/archive" element={<Archive />} />
                   <Route path="/posts/:id" element={<Post />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/search" element={<Search />} />
                 </Routes>
               </Suspense>
             </div>

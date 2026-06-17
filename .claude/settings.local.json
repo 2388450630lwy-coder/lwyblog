@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.lwyzyc.com)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(npx tsc *)"
     ]
   }
 }
