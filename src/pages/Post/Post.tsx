@@ -46,6 +46,21 @@ function sectionsToMarkdown(sections: PostSection[]): string {
     .join("\n\n");
 }
 
+function normalizeMarkdown(md: string): string {
+  let inFence = false;
+  return md
+    .split("\n")
+    .map((line) => {
+      if (/^\s*```/.test(line)) {
+        inFence = !inFence;
+        return line;
+      }
+      if (inFence) return line;
+      return line.replace(/\*\*([^*\n]+?)[:：]\*\*/g, "**$1**:");
+    })
+    .join("\n");
+}
+
 function readTime(sections: PostSection[]): number {
   const chars = sections.reduce((sum, s) => {
     return sum + s.heading.length + s.paragraphs.reduce((a, p) => a + p.length, 0);
@@ -249,7 +264,7 @@ function Post() {
   // Build HTML with heading IDs baked in — runs synchronously, no timing issues
   const { htmlBody, tocItems, readingTime } = useMemo(() => {
     if (!post) return { htmlBody: "", tocItems: [] as TocItem[], readingTime: 1 };
-    let md = sectionsToMarkdown(post.sections);
+    let md = normalizeMarkdown(sectionsToMarkdown(post.sections));
     // Resolve @img/{id} short references to base64 data URLs
     if (images.length > 0) {
       md = md.replace(/!\[([^\]]*)\]\(@img\/([^)]+)\)/g, (_, alt, id) => {
