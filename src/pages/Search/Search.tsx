@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Card, Button } from "animal-island-ui";
+import { Input } from "animal-island-ui";
 import { useBlog } from "../../context/BlogContext";
+import "./Search.less";
 
 function highlightText(text: string, query: string) {
   if (!query.trim()) return [{ text, highlight: false, key: 0 }];
@@ -44,6 +45,14 @@ export default function Search() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem("lwyblog-search-history");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -54,24 +63,10 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-    const input = document.querySelector(".search-page-input") as HTMLInputElement;
+    const input = document.querySelector('input[placeholder="搜索标题、标签或正文内容..."]') as HTMLInputElement;
     input?.focus();
   }, []);
 
-  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    try {
-      const raw = localStorage.getItem("lwyblog-search-history");
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-  });
-
-  const saveToHistory = (q: string) => {
-    const updated = [q, ...searchHistory.filter((h) => h !== q)].slice(0, 5);
-    setSearchHistory(updated);
-    localStorage.setItem("lwyblog-search-history", JSON.stringify(updated));
-  };
-
-  // Popular tags
   const popularTags = useMemo(() => {
     const map: Record<string, number> = {};
     for (const p of posts) {
@@ -97,9 +92,20 @@ export default function Search() {
     });
   }, [posts, query]);
 
+  const saveToHistory = (q: string) => {
+    const updated = [q, ...searchHistory.filter((h) => h !== q)].slice(0, 5);
+    setSearchHistory(updated);
+    localStorage.setItem("lwyblog-search-history", JSON.stringify(updated));
+  };
+
   const goToPost = (postId: string) => {
     if (query.trim()) saveToHistory(query.trim());
     navigate(`/posts/${postId}`);
+  };
+
+  const clearHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem("lwyblog-search-history");
   };
 
   const isEmpty = !query.trim();
@@ -107,240 +113,128 @@ export default function Search() {
   const noResults = query.trim() && results.length === 0;
 
   return (
-    <div style={{
-      maxWidth: 720,
-      margin: "0 auto",
-      padding: "32px 20px 80px",
-      color: dark ? "#d4d4db" : "#2a2a35",
-    }}>
-      {/* Hero search bar */}
-      <div style={{ textAlign: "center", marginBottom: 40 }}>
-        <h1 style={{
-          fontSize: 28,
-          fontWeight: 800,
-          margin: "0 0 8px",
-        }}>搜索文章</h1>
-        <p style={{
-          fontSize: 14,
-          opacity: 0.5,
-          margin: "0 0 24px",
-        }}>
-          共 {posts.length} 篇文章，{new Set(posts.flatMap((p) => p.tags)).size} 个标签
-        </p>
-        <div style={{ maxWidth: 520, margin: "0 auto" }}>
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索标题、标签或正文内容..."
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && results.length > 0) {
-                goToPost(results[0].id);
-              }
-            }}
-            className="search-page-input"
-          />
-          <div style={{ fontSize: 12, opacity: 0.35, marginTop: 8 }}>
-            输入关键词即时搜索 · 回车打开第一篇结果
+    <div
+      className={dark ? "search search--dark" : "search"}
+      style={{ color: dark ? "#e4e4ea" : "#3b2f22" }}
+    >
+      <div className="search-container">
+        <section className="search-hero">
+          <div className="search-hero-glow" aria-hidden="true" />
+          <span className="search-spark search-spark--1" aria-hidden="true" />
+          <span className="search-spark search-spark--2" aria-hidden="true" />
+          <span className="search-spark search-spark--3" aria-hidden="true" />
+          <h1 className="search-title">搜索文章</h1>
+          <p className="search-subtitle">
+            {posts.length} 篇文章 · {new Set(posts.flatMap((p) => p.tags)).size} 个标签
+          </p>
+          <div className="search-box">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="搜索标题、标签或正文内容..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && results.length > 0) {
+                  goToPost(results[0].id);
+                }
+              }}
+              className="search-page-input"
+            />
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Empty state */}
-      {isEmpty && (
-        <>
-          {/* Search history */}
-          {searchHistory.length > 0 && (
-            <div style={{ marginBottom: 28 }}>
-              <div style={{
-                fontSize: 13,
-                fontWeight: 600,
-                opacity: 0.45,
-                marginBottom: 10,
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}>最近搜索</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {searchHistory.map((h) => (
-                  <span
-                    key={h}
-                    onClick={() => setQuery(h)}
-                    style={{
-                      fontSize: 14,
-                      padding: "6px 18px",
-                      borderRadius: 18,
-                      cursor: "pointer",
-                      background: dark ? "rgba(160,160,180,0.10)" : "rgba(140,140,165,0.07)",
-                      border: dark ? "1px solid rgba(160,160,180,0.12)" : "1px solid rgba(140,140,165,0.10)",
-                    }}
-                  >
-                    {h}
-                  </span>
-                ))}
-                <span
-                  onClick={() => {
-                    setSearchHistory([]);
-                    localStorage.removeItem("lwyblog-search-history");
-                  }}
-                  style={{
-                    fontSize: 13,
-                    padding: "6px 14px",
-                    borderRadius: 18,
-                    cursor: "pointer",
-                    opacity: 0.35,
-                    background: "transparent",
-                  }}
-                >清除记录</span>
+        {isEmpty && (
+          <div className="search-panels">
+            {searchHistory.length > 0 && (
+              <section className="search-panel">
+                <div className="search-panel-header">
+                  <h2>最近搜索</h2>
+                  <button type="button" onClick={clearHistory}>清除记录</button>
+                </div>
+                <div className="search-chips">
+                  {searchHistory.map((h) => (
+                    <button key={h} type="button" className="search-chip" onClick={() => setQuery(h)}>
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="search-panel">
+              <div className="search-panel-header">
+                <h2>热门标签</h2>
               </div>
-            </div>
-          )}
+              <div className="search-chips">
+                {popularTags.map((t) => (
+                  <button key={t} type="button" className="search-chip" onClick={() => setQuery(t)}>
+                    #{t}
+                  </button>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
 
-          {/* Popular tags */}
-          <div>
-            <div style={{
-              fontSize: 13,
-              fontWeight: 600,
-              opacity: 0.45,
-              marginBottom: 10,
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}>热门标签</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {popularTags.map((t) => (
-                <span
-                  key={t}
-                  onClick={() => setQuery(t)}
-                  style={{
-                    fontSize: 14,
-                    padding: "6px 16px",
-                    borderRadius: 16,
-                    cursor: "pointer",
-                    background: dark ? "rgba(160,160,180,0.08)" : "rgba(140,140,165,0.06)",
-                  }}
-                >#{t}</span>
+        {noResults && (
+          <section className="search-empty">
+            <div className="search-empty-icon">?</div>
+            <p>没有找到包含「{query}」的文章</p>
+            <div className="search-chips search-chips--center">
+              {popularTags.slice(0, 6).map((t) => (
+                <button key={t} type="button" className="search-chip" onClick={() => setQuery(t)}>
+                  #{t}
+                </button>
               ))}
             </div>
-          </div>
-        </>
-      )}
+          </section>
+        )}
 
-      {/* No results */}
-      {noResults && (
-        <div style={{
-          textAlign: "center",
-          padding: "60px 20px",
-        }}>
-          <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.6 }}>🔍</div>
-          <p style={{
-            fontSize: 15,
-            opacity: 0.5,
-            margin: "0 0 8px",
-          }}>没有找到包含「{query}」的文章</p>
-          <p style={{
-            fontSize: 13,
-            opacity: 0.35,
-            margin: "0 0 24px",
-          }}>试试其他关键词，或浏览热门标签</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-            {popularTags.slice(0, 6).map((t) => (
-              <span
-                key={t}
-                onClick={() => setQuery(t)}
-                style={{
-                  fontSize: 13,
-                  padding: "5px 14px",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  background: dark ? "rgba(160,160,180,0.08)" : "rgba(140,140,165,0.06)",
-                }}
-              >#{t}</span>
-            ))}
-          </div>
-        </div>
-      )}
+        {hasResults && (
+          <section className="search-results">
+            <div className="search-results-header">
+              找到 {results.length} 篇匹配「<strong>{query}</strong>」的文章
+            </div>
 
-      {/* Results */}
-      {hasResults && (
-        <div>
-          <div style={{
-            fontSize: 13,
-            opacity: 0.45,
-            fontWeight: 600,
-            marginBottom: 16,
-          }}>
-            找到 {results.length} 篇匹配「{query}」的文章
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {results.map((post) => {
-              const snippet = getMatchSnippet(post, query);
-              return (
-                <Card key={post.id}>
+            <div className="search-posts-list">
+              {results.map((post, index) => {
+                const snippet = getMatchSnippet(post, query);
+                return (
                   <div
+                    key={`${post.id}-${index}`}
+                    className="search-post-card"
                     onClick={() => goToPost(post.id)}
-                    style={{
-                      cursor: "pointer",
-                      padding: "2px 0",
-                    }}
                   >
-                    <div style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      gap: 12,
-                      marginBottom: 8,
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: 17, lineHeight: 1.4, flex: 1 }}>
-                        {highlightText(post.title, query).map((part) => (
+                    <span className="search-post-cover">{post.cover}</span>
+                    <div className="search-post-info">
+                      <div className="search-post-head">
+                        <h3 className="search-post-title">
+                          {highlightText(post.title, query).map((part) => (
+                            <span key={part.key} className={part.highlight ? "search-highlight" : undefined}>
+                              {part.text}
+                            </span>
+                          ))}
+                        </h3>
+                        <span className="search-post-date">{post.date} · {readTime(post)} 分钟</span>
+                      </div>
+                      {snippet && <p className="search-post-snippet">{snippet}</p>}
+                      <div className="search-post-tags">
+                        {post.tags.map((t) => (
                           <span
-                            key={part.key}
-                            style={part.highlight ? {
-                              background: dark ? "rgba(200,160,60,0.35)" : "rgba(200,150,50,0.35)",
-                              borderRadius: 3,
-                              padding: "0 2px",
-                            } : undefined}
-                          >{part.text}</span>
+                            key={t}
+                            className={query.trim().toLowerCase() === t.toLowerCase() ? "search-tag search-tag--active" : "search-tag"}
+                          >
+                            #{t}
+                          </span>
                         ))}
                       </div>
-                      <span style={{
-                        fontSize: 12,
-                        opacity: 0.4,
-                        whiteSpace: "nowrap",
-                        marginTop: 3,
-                      }}>{post.date} · {readTime(post)} 分钟</span>
-                    </div>
-                    {snippet && (
-                      <div style={{
-                        fontSize: 14,
-                        opacity: 0.55,
-                        lineHeight: 1.7,
-                        marginBottom: 10,
-                      }}>
-                        {snippet}
-                      </div>
-                    )}
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                      {post.tags.map((t) => (
-                        <span
-                          key={t}
-                          style={{
-                            fontSize: 11,
-                            padding: "2px 10px",
-                            borderRadius: 10,
-                            background: dark ? "rgba(160,160,180,0.10)" : "rgba(140,140,165,0.08)",
-                            fontWeight: query.trim().toLowerCase() === t.toLowerCase() ? 700 : 400,
-                            color: query.trim().toLowerCase() === t.toLowerCase()
-                              ? (dark ? "#c8c8d4" : "#5a5a68") : undefined,
-                          }}
-                        >#{t}</span>
-                      ))}
                     </div>
                   </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
