@@ -6,6 +6,13 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
+  overflow-x: clip;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 /* ═══ CSS Variables — cool palette override ═══ */
@@ -44,6 +51,7 @@ html.dark {
 body {
   background: #fff;
   margin: 0;
+  overflow-x: clip;
 }
 
 /* ═══ Dot grid ═══ */

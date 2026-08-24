@@ -19,7 +19,9 @@ export default function Tags() {
     try {
       const saved = sessionStorage.getItem("lwyblog-tags-filter");
       return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-    } catch { return new Set<string>(); }
+    } catch {
+      return new Set<string>();
+    }
   });
   const [showAll, setShowAll] = useState(false);
   const SHOW_LIMIT = 5;
@@ -57,6 +59,7 @@ export default function Tags() {
   }, [posts, selectedTags]);
 
   const maxCount = tagStats.length > 0 ? tagStats[0].count : 1;
+  const topTag = tagStats[0];
 
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) => {
@@ -70,19 +73,35 @@ export default function Tags() {
     setShowAll(false);
   };
 
+  const clearTags = () => {
+    setSelectedTags(new Set());
+    sessionStorage.removeItem("lwyblog-tags-filter");
+  };
+
   return (
     <div
       className={dark ? "tags tags--dark" : "tags"}
       style={{ color: dark ? "#e4e4ea" : "#3b2f22" }}
     >
       <div className="tags-container">
-        <h1 className="tags-title">🏷️ 标签</h1>
-        <p className="tags-subtitle">共 {tagStats.length} 个标签</p>
+        <section className="tags-hero">
+          <div className="tags-hero-glow" aria-hidden="true" />
+          <span className="tags-spark tags-spark--1" aria-hidden="true" />
+          <span className="tags-spark tags-spark--2" aria-hidden="true" />
+          <span className="tags-spark tags-spark--3" aria-hidden="true" />
+          <h1 className="tags-title">文章标签</h1>
+          <p className="tags-subtitle">
+            {tagStats.length} 个标签 · {posts.length} 篇文章
+          </p>
+          <div className="tags-summary">
+            <span>{topTag ? `#${topTag.name}` : "暂无标签"}</span>
+            <span>{topTag?.count || 0} 篇最多</span>
+          </div>
+        </section>
 
-        {/* Tag cloud — compact */}
         <div className="tags-cloud">
           {tagStats.map((tag) => {
-            const size = 0.8 + (tag.count / maxCount) * 0.7;
+            const size = 0.88 + (tag.count / maxCount) * 0.22;
             const isActive = selectedTags.has(tag.name);
             return (
               <span
@@ -101,20 +120,19 @@ export default function Tags() {
           })}
         </div>
 
-        {/* Results */}
         <div className="tags-results">
           <div className="tags-results-header">
             <span>
-              {selectedTags.size > 0
-                ? <>标签「<strong>{[...selectedTags].map(t => `#${t}`).join(" + ")}</strong>」（{filteredPosts.length} 篇）</>
-                : <>全部文章（{posts.length} 篇）</>
-              }
+              {selectedTags.size > 0 ? (
+                <>
+                  标签 <strong>{[...selectedTags].map((t) => `#${t}`).join(" + ")}</strong>（{filteredPosts.length} 篇）
+                </>
+              ) : (
+                <>全部文章（{posts.length} 篇）</>
+              )}
             </span>
             {selectedTags.size > 0 && (
-              <Button type="text" onClick={() => {
-                setSelectedTags(new Set());
-                sessionStorage.removeItem("lwyblog-tags-filter");
-              }}>
+              <Button type="text" onClick={clearTags}>
                 清除筛选
               </Button>
             )}
@@ -150,7 +168,6 @@ export default function Tags() {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

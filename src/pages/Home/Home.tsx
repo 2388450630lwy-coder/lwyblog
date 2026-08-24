@@ -102,6 +102,21 @@ function Home() {
     }
   }, [email]);
 
+  const handleCardPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    card.style.setProperty("--glare-x", `${Math.round(px * 100)}%`);
+    card.style.setProperty("--glare-y", `${Math.round(py * 100)}%`);
+  }, []);
+
+  const handleCardPointerLeave = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    card.style.setProperty("--glare-x", "50%");
+    card.style.setProperty("--glare-y", "30%");
+  }, []);
+
   const s = loadSiteSettings();
 
   // ── Stats count-up ──
@@ -133,7 +148,7 @@ function Home() {
   useEffect(() => {
     const onScroll = () => {
       const st = window.scrollY;
-      document.querySelectorAll<HTMLElement>(".blog-hero-cloud, .blog-hero-bird, .blog-hero-sun, .blog-hero-wave").forEach((el) => {
+      document.querySelectorAll<HTMLElement>(".blog-hero-cloud, .blog-hero-bird, .blog-hero-sun").forEach((el) => {
         const speed = parseFloat(el.getAttribute("data-speed") || "0.3");
         el.style.transform = `translateY(${st * speed}px)`;
       });
@@ -162,6 +177,10 @@ function Home() {
     <div className={`blog ${dark ? "blog--dark" : ""}`}>
       {/* Hero */}
       <section className="blog-hero">
+        <div className="blog-hero-aurora" aria-hidden="true" />
+        <span className="blog-fx-orbit blog-fx-orbit--1" aria-hidden="true" />
+        <span className="blog-fx-orbit blog-fx-orbit--2" aria-hidden="true" />
+        <span className="blog-fx-orbit blog-fx-orbit--3" aria-hidden="true" />
         {/* Sunrise glow */}
         <div className="blog-hero-sun" data-speed="0.08" />
         {/* Clouds */}
@@ -211,7 +230,7 @@ function Home() {
       </section>
 
       {/* Stats */}
-      <section className="blog-stats">
+      <section className="blog-stats reveal">
         {stats.map((s) => (
           <div key={s.label} className="blog-stat">
             <div className="blog-stat-emoji">{s.emoji}</div>
@@ -222,7 +241,7 @@ function Home() {
       </section>
 
       {/* About */}
-      <section id="about" className="blog-about">
+      <section id="about" className="blog-about reveal">
         <div className="blog-avatar">{s.avatarEmoji}</div>
         <h3 className="blog-about-name">{s.authorName}</h3>
         <p className="blog-about-desc" style={{ whiteSpace: "pre-line" }}>{s.authorBio}</p>
@@ -245,6 +264,8 @@ function Home() {
               className="blog-post-card reveal"
               style={{ animationDelay: `${Math.min(idx * 60, 300)}ms` }}
               onClick={() => navigate(`/posts/${post.id}`)}
+              onPointerMove={handleCardPointerMove}
+              onPointerLeave={handleCardPointerLeave}
             >
               <Card>
                 <div className="blog-post-card-inner">
@@ -283,7 +304,7 @@ function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="blog-section">
+      <section id="faq" className="blog-section reveal">
         <h2 className="blog-section-title">常见问题</h2>
         <div className="blog-faq">
           {s.faqItems.map((faq) => (
@@ -297,7 +318,7 @@ function Home() {
       </section>
 
       {/* Subscribe */}
-      <section id="subscribe" className="blog-section">
+      <section id="subscribe" className="blog-section reveal">
         <Card>
           <div className="blog-subscribe-inner">
             <h2 className="blog-subscribe-title">{s.subscribeTitle}</h2>
