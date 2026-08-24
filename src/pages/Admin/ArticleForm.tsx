@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Input, Button, Select, Modal } from "animal-island-ui";
 import type { Post, PostSection, Category } from "../../data/posts";
 import { DEFAULT_CATEGORY_ID } from "../../data/posts";
-import { loadImages, saveImages, deleteImage, compressImage, type StoredImage } from "../../utils/images";
+import { loadImagesAsync, saveImages, deleteImage, compressImage, type StoredImage } from "../../utils/images";
 
 interface ArticleFormProps {
   initialData: Post | null;
@@ -75,7 +75,12 @@ export default function ArticleForm({ initialData, categories, onSave, onCancel 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (imgModalOpen) setImages(loadImages());
+    if (!imgModalOpen) return;
+    let cancelled = false;
+    loadImagesAsync().then((nextImages) => {
+      if (!cancelled) setImages(nextImages);
+    });
+    return () => { cancelled = true; };
   }, [imgModalOpen]);
 
   function insertImage(url: string, imgId?: string) {

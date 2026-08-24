@@ -2,12 +2,39 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Divider } from "animal-island-ui";
 import { marked } from "marked";
-import hljs from "highlight.js";
+import hljs from "highlight.js/lib/core";
+import bash from "highlight.js/lib/languages/bash";
+import csharp from "highlight.js/lib/languages/csharp";
+import css from "highlight.js/lib/languages/css";
+import java from "highlight.js/lib/languages/java";
+import javascript from "highlight.js/lib/languages/javascript";
+import json from "highlight.js/lib/languages/json";
+import typescript from "highlight.js/lib/languages/typescript";
+import xml from "highlight.js/lib/languages/xml";
 import { useBlog } from "../../context/BlogContext";
-import { loadImages } from "../../utils/images";
+import { loadImagesAsync, resolveImageSrc, type StoredImage } from "../../utils/images";
 import "../../markdown.css";
 import "../../hljs-theme.css";
 import type { PostSection } from "../../data/posts";
+
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("csharp", csharp);
+hljs.registerLanguage("css", css);
+hljs.registerLanguage("java", java);
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("json", json);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("xml", xml);
+
+const LANGUAGE_ALIASES: Record<string, string> = {
+  "c#": "csharp",
+  cs: "csharp",
+  html: "xml",
+  js: "javascript",
+  shell: "bash",
+  sh: "bash",
+  ts: "typescript",
+};
 
 function sectionsToMarkdown(sections: PostSection[]): string {
   return sections
@@ -34,15 +61,105 @@ function escapeAttr(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
+const ALLOWED_TAGS = new Set([
+  "a", "blockquote", "br", "button", "code", "del", "div", "em", "h1", "h2", "h3", "h4",
+  "h5", "h6", "hr", "img", "li", "ol", "p", "pre", "span", "strong", "table", "tbody",
+  "td", "th", "thead", "tr", "ul",
+]);
+
+const ALLOWED_ATTRS: Record<string, Set<string>> = {
+  a: new Set(["href", "rel", "target", "title"]),
+  button: new Set(["class", "data-code", "type"]),
+  code: new Set(["class"]),
+  div: new Set(["class"]),
+  h1: new Set(["id"]),
+  h2: new Set(["id"]),
+  h3: new Set(["id"]),
+  h4: new Set(["id"]),
+  h5: new Set(["id"]),
+  h6: new Set(["id"]),
+  img: new Set(["alt", "loading", "src", "title"]),
+  pre: new Set(["class"]),
+  span: new Set(["class"]),
+  table: new Set(["class"]),
+  td: new Set(["align"]),
+  th: new Set(["align"]),
+};
+
+function isSafeUrl(value: string, kind: "href" | "src"): boolean {
+  if (kind === "src" && /^data:image\/(?:png|jpe?g|gif|webp|svg\+xml);base64,/i.test(value)) {
+    return true;
+  }
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (kind === "href") return ["http:", "https:", "mailto:"].includes(parsed.protocol);
+    return ["http:", "https:"].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeHtml(html: string): string {
+  const root = document.createElement("div");
+  root.innerHTML = html;
+
+  const visit = (node: Node) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType !== Node.ELEMENT_NODE) continue;
+      const el = child as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+
+      if (tag === "script" || tag === "style" || tag === "iframe" || tag === "object") {
+        el.remove();
+        continue;
+      }
+
+      if (!ALLOWED_TAGS.has(tag)) {
+        el.replaceWith(...Array.from(el.childNodes));
+        continue;
+      }
+
+      const allowedAttrs = ALLOWED_ATTRS[tag] ?? new Set<string>();
+      for (const attr of Array.from(el.attributes)) {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim();
+        const isAllowed = allowedAttrs.has(name);
+        const isSafe = (name === "href" || name === "src")
+          ? isSafeUrl(value, name)
+          : !name.startsWith("on");
+        if (!isAllowed || !isSafe) el.removeAttribute(attr.name);
+      }
+
+      if (tag === "a") {
+        const href = el.getAttribute("href");
+        if (!href) {
+          el.removeAttribute("target");
+          el.removeAttribute("rel");
+        } else if (/^https?:\/\//i.test(href)) {
+          el.setAttribute("target", "_blank");
+          el.setAttribute("rel", "noopener noreferrer");
+        }
+      }
+
+      if (tag === "button") el.setAttribute("type", "button");
+      visit(el);
+    }
+  };
+
+  visit(root);
+  return root.innerHTML;
+}
+
 function buildHtml(markdown: string): string {
   const renderer = new marked.Renderer();
 
   renderer.code = function ({ text, lang }: { text: string; lang?: string }) {
     const langLabel = lang || "plain text";
+    const normalizedLang = lang ? LANGUAGE_ALIASES[lang.toLowerCase()] ?? lang.toLowerCase() : "";
 
     let highlighted: string;
-    if (lang && hljs.getLanguage(lang)) {
-      const result = hljs.highlight(text, { language: lang });
+    if (normalizedLang && hljs.getLanguage(normalizedLang)) {
+      const result = hljs.highlight(text, { language: normalizedLang });
       highlighted = result.value;
     } else {
       highlighted = text
@@ -54,27 +171,26 @@ function buildHtml(markdown: string): string {
     return `
 <div class="code-block-wrapper">
   <div class="code-block-header">
-    <span class="code-block-lang">${langLabel}</span>
+    <span class="code-block-lang">${escapeAttr(langLabel)}</span>
     <button class="code-block-copy" data-code="${escapeAttr(text)}">复制</button>
   </div>
-  <pre><code class="hljs language-${langLabel}">${highlighted}</code></pre>
+  <pre><code class="hljs language-${escapeAttr(normalizedLang || "plain-text")}">${highlighted}</code></pre>
 </div>`.trim();
   };
 
   renderer.image = function ({ href, title, text }) {
-    const titleAttr = title ? ` title="${title}"` : "";
-    return `<img src="${href}" alt="${text}"${titleAttr} loading="lazy" />`;
+    const titleAttr = title ? ` title="${escapeAttr(title)}"` : "";
+    return `<img src="${escapeAttr(href)}" alt="${escapeAttr(text)}"${titleAttr} loading="lazy" />`;
   };
 
   renderer.link = function ({ href, title, text }) {
-    const titleAttr = title ? ` title="${title}"` : "";
+    const titleAttr = title ? ` title="${escapeAttr(title)}"` : "";
     const isExternal = /^https?:\/\//.test(href) && !href.includes(location.hostname);
     const target = isExternal ? ' target="_blank" rel="noopener noreferrer"' : "";
-    return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
+    return `<a href="${escapeAttr(href)}"${titleAttr}${target}>${text}</a>`;
   };
 
-  marked.setOptions({ renderer });
-  return marked.parse(markdown) as string;
+  return sanitizeHtml(marked.parse(markdown, { renderer }) as string);
 }
 
 interface TocItem {
@@ -111,6 +227,7 @@ function Post() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+  const [images, setImages] = useState<StoredImage[]>([]);
 
   // React to dark mode toggle from Header
   useEffect(() => {
@@ -134,18 +251,29 @@ function Post() {
     if (!post) return { htmlBody: "", tocItems: [] as TocItem[], readingTime: 1 };
     let md = sectionsToMarkdown(post.sections);
     // Resolve @img/{id} short references to base64 data URLs
-    const images = loadImages();
     if (images.length > 0) {
-      const map = new Map(images.map((img) => [img.id, img.dataUrl]));
       md = md.replace(/!\[([^\]]*)\]\(@img\/([^)]+)\)/g, (_, alt, id) => {
-        const url = map.get(id);
+        const url = resolveImageSrc(`@img/${id}`, images);
         return url ? `![${alt}](${url})` : `![${alt}](missing:${id})`;
       });
     }
     const raw = buildHtml(md);
     const result = injectHeadingIds(raw);
     return { htmlBody: result.html, tocItems: result.toc, readingTime: readTime(post.sections) };
-  }, [post]);
+  }, [post, images]);
+
+  const coverImage = useMemo(
+    () => resolveImageSrc(post?.coverImage, images),
+    [post?.coverImage, images],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    loadImagesAsync().then((nextImages) => {
+      if (!cancelled) setImages(nextImages);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const [activeId, setActiveId] = useState("");
   const [zoomedImg, setZoomedImg] = useState<string | null>(null);
@@ -361,9 +489,9 @@ function Post() {
           {/* Article header */}
           <Card>
             <div style={{ padding: "28px 32px 24px", textAlign: "center" }}>
-              {post.coverImage && (
+              {coverImage && (
                 <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}>
-                  <img src={post.coverImage} alt="" style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 12, objectFit: "cover" }} />
+                  <img src={coverImage} alt="" style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 12, objectFit: "cover" }} />
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>

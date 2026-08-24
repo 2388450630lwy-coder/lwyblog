@@ -8,14 +8,14 @@ import { DEFAULT_CATEGORY_ID, posts as staticPosts } from "../../data/posts";
 import { loadLocalData } from "../../utils/localStorage";
 import { deployAll, deployImages, setDeployToken, getDeployToken } from "../../utils/deploy";
 import ArticleForm from "./ArticleForm";
-import { loadImages, deleteImage, type StoredImage } from "../../utils/images";
+import { loadImagesAsync, deleteImage, type StoredImage } from "../../utils/images";
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
 import { loadSocial, saveSocial as persistSocial } from "../../utils/socialLinks";
 import "./Admin.less";
 
-const ADMIN_USER = "lwy";
-const ADMIN_PASS = "liwenyu2388";
 const AUTH_KEY = "lwyblog-auth";
+const ADMIN_USER_KEY = "lwyblog-admin-user";
+const ADMIN_PASS_HASH_KEY = "lwyblog-admin-pass-hash";
 
 function getAuth(): boolean {
   return sessionStorage.getItem(AUTH_KEY) === "1";
@@ -23,6 +23,29 @@ function getAuth(): boolean {
 
 function setAuth() {
   sessionStorage.setItem(AUTH_KEY, "1");
+}
+
+function getStoredAdmin(): { username: string; passwordHash: string } | null {
+  try {
+    const storedUsername = localStorage.getItem(ADMIN_USER_KEY);
+    const storedHash = localStorage.getItem(ADMIN_PASS_HASH_KEY);
+    if (!storedUsername || !storedHash) return null;
+    return { username: storedUsername, passwordHash: storedHash };
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredAdmin(username: string, passwordHash: string): void {
+  localStorage.setItem(ADMIN_USER_KEY, username);
+  localStorage.setItem(ADMIN_PASS_HASH_KEY, passwordHash);
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export default function Admin() {
@@ -44,6 +67,7 @@ export default function Admin() {
   }, []);
 
   const [authed, setAuthed] = useState(getAuth);
+  const [setupRequired, setSetupRequired] = useState(() => !getStoredAdmin());
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -71,7 +95,9 @@ export default function Admin() {
   // Image management state
   const [imageList, setImageList] = useState<StoredImage[]>([]);
 
-  const refreshImages = () => setImageList(loadImages());
+  const refreshImages = () => {
+    void loadImagesAsync().then(setImageList);
+  };
 
   // Site settings state
   const [blogTitle, setBlogTitle] = useState("");
@@ -113,7 +139,7 @@ export default function Admin() {
   };
 
   // Deploy helper
-  const tryDeploy = (msg: string) => {
+  const tryDeploy = async (msg: string) => {
     if (!ghToken) { showToast(msg); return; }
     // Merge with existing config to preserve new fields
     const existing = loadSiteSettings();
@@ -133,7 +159,7 @@ export default function Admin() {
     };
     saveSiteSettings(config);
     const localData = loadLocalData();
-    const images = loadImages();
+    const images = await loadImagesAsync();
     deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(result => {
       showToast(result.ok ? msg + "，已触发部署" : msg + "，部署失败：" + (result.error || "未知错误"));
     });
@@ -226,8 +252,25 @@ export default function Admin() {
     return result;
   }, [posts, categoryFilter, searchQuery, getCategoryName]);
 
-  function handleLogin() {
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
+  async function handleLogin() {
+    const cleanUsername = username.trim();
+    if (!cleanUsername || !password) {
+      setLoginError(setupRequired ? "请设置账号和密码" : "请输入账号和密码");
+      return;
+    }
+
+    const passwordHash = await hashPassword(password);
+    const storedAdmin = getStoredAdmin();
+    if (!storedAdmin) {
+      saveStoredAdmin(cleanUsername, passwordHash);
+      setSetupRequired(false);
+      setAuth();
+      setAuthed(true);
+      setLoginError("");
+      return;
+    }
+
+    if (cleanUsername === storedAdmin.username && passwordHash === storedAdmin.passwordHash) {
       setAuth();
       setAuthed(true);
       setLoginError("");
@@ -237,7 +280,7 @@ export default function Admin() {
   }
 
   function handleLoginKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") handleLogin();
+    if (e.key === "Enter") void handleLogin();
   }
 
   function handleCreate() {
@@ -382,8 +425,10 @@ export default function Admin() {
           <Card>
             <div style={{ padding: 40, textAlign: "center", maxWidth: 360, margin: "0 auto" }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>{siteInfo.logoEmoji}</div>
-              <h2 style={{ margin: "0 0 8px" }}>管理后台</h2>
-              <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.6 }}>{siteInfo.blogTitle}</p>
+              <h2 style={{ margin: "0 0 8px" }}>{setupRequired ? "初始化管理员" : "管理后台"}</h2>
+              <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.6 }}>
+                {setupRequired ? "首次使用请设置本机后台账号" : siteInfo.blogTitle}
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <Input
                   value={username}
@@ -401,8 +446,8 @@ export default function Admin() {
                 {loginError && (
                   <p style={{ color: "#e06040", fontSize: 13, margin: 0 }}>{loginError}</p>
                 )}
-                <Button type="primary" onClick={handleLogin}>
-                  登录
+                <Button type="primary" onClick={() => void handleLogin()}>
+                  {setupRequired ? "完成设置" : "登录"}
                 </Button>
               </div>
               <div style={{ marginTop: 16 }}>
@@ -626,12 +671,12 @@ export default function Admin() {
                       }}>
                         复制
                       </Button>
-                      <Button type="text" onClick={() => {
+                      <Button type="text" onClick={async () => {
                         deleteImage(img.id);
                         refreshImages();
                         showToast("图片已删除");
                         if (ghToken) {
-                          const images = loadImages();
+                          const images = await loadImagesAsync();
                           deployImages(JSON.stringify(images, null, 2)).then(result => {
                             if (!result.ok) showToast("图片部署失败：" + (result.error || "未知错误"));
                           });
@@ -960,7 +1005,7 @@ export default function Admin() {
                 勾选 repo 权限即可。
               </p>
               <div className="admin-social-save" style={{ marginTop: 12 }}>
-                <Button type="primary" onClick={() => {
+                <Button type="primary" onClick={async () => {
                   const existing = loadSiteSettings();
                   const config = {
                     ...existing,
@@ -980,7 +1025,7 @@ export default function Admin() {
                   saveSiteSettings(config);
                   if (ghToken) {
                     const localData = loadLocalData();
-                    const images = loadImages();
+                    const images = await loadImagesAsync();
                     deployAll(JSON.stringify(config, null, 2), JSON.stringify(localData.posts, null, 2), JSON.stringify(images, null, 2)).then(result => {
                       showToast(result.ok ? "推送成功！1-2 分钟后生效" : "推送失败：" + (result.error || "未知错误"));
                     });

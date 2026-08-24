@@ -3,12 +3,16 @@ const TOKEN_KEY = "lwyblog-gh-token";
 
 function getToken(): string {
   try {
-    return localStorage.getItem(TOKEN_KEY) || "";
+    localStorage.removeItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY) || "";
   } catch { return ""; }
 }
 
 export function getDeployToken(): string { return getToken(); }
-export function setDeployToken(t: string): void { localStorage.setItem(TOKEN_KEY, t); }
+export function setDeployToken(t: string): void {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.setItem(TOKEN_KEY, t);
+}
 export function hasDeployToken(): boolean { return !!getToken(); }
 
 /** Safely encode a string to base64 (handles Unicode correctly) */
@@ -33,6 +37,7 @@ async function getFileSha(path: string, token: string): Promise<{ sha: string | 
       headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" },
     });
     if (!res.ok) {
+      if (res.status === 404) return { sha: null };
       const body = await res.json().catch(() => ({}));
       return { sha: null, error: `读取 ${path}: ${res.status} ${body.message || res.statusText}` };
     }
@@ -97,7 +102,7 @@ export async function deployUserPosts(postsJson: string): Promise<DeployResult> 
 export async function deployImages(imagesJson: string): Promise<DeployResult> {
   const token = getToken();
   if (!token) return { ok: false, error: "未配置 Token" };
-  return commitFile("src/data/user-images.json", imagesJson, "deploy: 更新图片", token);
+  return commitFile("public/data/user-images.json", imagesJson, "deploy: 更新图片", token);
 }
 
 export async function deploySiteAndPosts(configJson: string, postsJson: string): Promise<DeployResult> {
@@ -123,6 +128,6 @@ export async function deployAll(
   if (!r1.ok) return r1;
   const r2 = await commitFile("src/data/user-posts.json", postsJson, "deploy: 更新文章", token);
   if (!r2.ok) return r2;
-  const r3 = await commitFile("src/data/user-images.json", imagesJson, "deploy: 更新图片", token);
+  const r3 = await commitFile("public/data/user-images.json", imagesJson, "deploy: 更新图片", token);
   return r3;
 }

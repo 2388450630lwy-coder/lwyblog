@@ -1,5 +1,6 @@
 const STORAGE_KEY = "lwyblog-images";
 const SEED_LOADED_KEY = "lwyblog-images-seeded";
+let seedPromise: Promise<StoredImage[]> | null = null;
 
 export interface StoredImage {
   id: string;
@@ -8,22 +9,32 @@ export interface StoredImage {
   date: string;
 }
 
-async function mergeSeedImages(): Promise<void> {
+async function mergeSeedImages(): Promise<StoredImage[]> {
   try {
-    if (localStorage.getItem(SEED_LOADED_KEY)) return;
+    if (localStorage.getItem(SEED_LOADED_KEY)) return loadImagesRaw();
     const existing = loadImagesRaw();
     const existingIds = new Set(existing.map((e) => e.id));
-    const [{ default: seedImages }, { default: userImages }] = await Promise.all([
-      import("../data/seed-images.json"),
-      import("../data/user-images.json"),
+    const [seedImages, userImages] = await Promise.all([
+      loadSeedFile("seed-images.json"),
+      loadSeedFile("user-images.json"),
     ]);
     const allSeed = [...seedImages, ...userImages];
     const newImages = allSeed.filter((s: StoredImage) => !existingIds.has(s.id));
-    if (newImages.length > 0) {
-      saveImages([...existing, ...newImages]);
-    }
+    const merged = newImages.length > 0 ? [...existing, ...newImages] : existing;
+    if (newImages.length > 0) saveImages(merged);
     localStorage.setItem(SEED_LOADED_KEY, "1");
-  } catch { /* ignore */ }
+    return merged;
+  } catch {
+    return loadImagesRaw();
+  }
+}
+
+async function loadSeedFile(fileName: string): Promise<StoredImage[]> {
+  const base = import.meta.env.BASE_URL || "/";
+  const res = await fetch(`${base}data/${fileName}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data as StoredImage[] : [];
 }
 
 function loadImagesRaw(): StoredImage[] {
@@ -36,8 +47,25 @@ function loadImagesRaw(): StoredImage[] {
 }
 
 export function loadImages(): StoredImage[] {
-  mergeSeedImages();
+  void ensureSeedImages();
   return loadImagesRaw();
+}
+
+export function ensureSeedImages(): Promise<StoredImage[]> {
+  seedPromise ??= mergeSeedImages();
+  return seedPromise;
+}
+
+export async function loadImagesAsync(): Promise<StoredImage[]> {
+  await ensureSeedImages();
+  return loadImagesRaw();
+}
+
+export function resolveImageSrc(src?: string, images: StoredImage[] = loadImages()): string | undefined {
+  if (!src) return undefined;
+  const match = src.match(/^@img\/(.+)$/);
+  if (!match) return src;
+  return images.find((img) => img.id === match[1])?.dataUrl;
 }
 
 export function saveImages(images: StoredImage[]): void {

@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const POSTS_PATH = path.join(__dirname, "..", "src", "data", "posts.ts");
-const IMAGES_OUT = path.join(__dirname, "..", "src", "data", "seed-images.json");
+const IMAGES_OUT = path.join(__dirname, "..", "public", "data", "seed-images.json");
 const MAX_WIDTH = 550;       // max width in px
 const JPEG_QUALITY = 70;     // JPEG quality (0-100)
 

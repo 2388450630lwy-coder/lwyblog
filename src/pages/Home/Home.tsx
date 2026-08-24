@@ -13,6 +13,7 @@ import {
 } from "animal-island-ui";
 import { useBlog } from "../../context/BlogContext";
 import { loadSiteSettings } from "../../utils/siteSettings";
+import { loadImagesAsync, resolveImageSrc, type StoredImage } from "../../utils/images";
 import type { PostSection } from "../../data/posts";
 import "./Home.less";
 
@@ -47,6 +48,7 @@ function Home() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+  const [images, setImages] = useState<StoredImage[]>([]);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -57,6 +59,14 @@ function Home() {
       attributeFilter: ["class"],
     });
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadImagesAsync().then((nextImages) => {
+      if (!cancelled) setImages(nextImages);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   // Scroll reveal
@@ -227,7 +237,9 @@ function Home() {
       <section id="posts" className="blog-section">
         <h2 className="blog-section-title">最新文章</h2>
         <div className="blog-posts-grid">
-          {posts.slice(0, showCount).map((post, idx) => (
+          {posts.slice(0, showCount).map((post, idx) => {
+            const coverImage = resolveImageSrc(post.coverImage, images);
+            return (
             <div
               key={post.id}
               className="blog-post-card reveal"
@@ -236,9 +248,9 @@ function Home() {
             >
               <Card>
                 <div className="blog-post-card-inner">
-                  {post.coverImage && (
+                  {coverImage && (
                     <div className="blog-post-cover">
-                      <img src={post.coverImage} alt="" className="blog-post-cover-img" />
+                      <img src={coverImage} alt="" className="blog-post-cover-img" />
                     </div>
                   )}
                   <div className="blog-post-tags">
@@ -258,7 +270,8 @@ function Home() {
                 </div>
               </Card>
             </div>
-          ))}
+            );
+          })}
         </div>
         {posts.length > showCount && (
           <div style={{ textAlign: "center", marginTop: 24 }}>
