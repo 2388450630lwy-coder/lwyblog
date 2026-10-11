@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Cursor, Footer } from "animal-island-ui";
 import "animal-island-ui/style";
 import "./global.css";
@@ -133,6 +133,7 @@ function App() {
                   <Route path="/posts/:id" element={<Post />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/search" element={<Search />} />
+                  <Route path="/notices" element={<Navigate to="/admin?tab=notices" replace />} />
                 </Routes>
               </Suspense>
             </div>

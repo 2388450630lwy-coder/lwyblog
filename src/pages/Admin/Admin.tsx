@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, lazy, Suspense } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Card, Modal, Table, Select, Input } from "animal-island-ui";
 import type { TableColumn } from "animal-island-ui";
 import { useBlog } from "../../context/BlogContext";
@@ -12,6 +12,8 @@ import { loadImagesAsync, deleteImage, type StoredImage } from "../../utils/imag
 import { loadSiteSettings, saveSiteSettings, type FAQItem } from "../../utils/siteSettings";
 import { loadSocial, saveSocial as persistSocial } from "../../utils/socialLinks";
 import "./Admin.less";
+
+const NoticePublisher = lazy(() => import("../NoticePublisher/NoticePublisher"));
 
 const AUTH_KEY = "lwyblog-auth";
 const ADMIN_USER_KEY = "lwyblog-admin-user";
@@ -50,6 +52,7 @@ async function hashPassword(password: string): Promise<string> {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { posts, categories, addPost, updatePost, deletePost, addCategory, updateCategory, deleteCategory, getCategoryName } = useBlog();
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
@@ -84,7 +87,13 @@ export default function Admin() {
   const [editingCatName, setEditingCatName] = useState("");
   const [newCatName, setNewCatName] = useState("");
   const [catDeleteConfirm, setCatDeleteConfirm] = useState<Category | null>(null);
-  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social" | "site" | "homepage" | "deploy">("posts");
+  const [adminTab, setAdminTab] = useState<"posts" | "categories" | "images" | "social" | "site" | "homepage" | "deploy" | "notices">(
+    () => new URLSearchParams(location.search).get("tab") === "notices" ? "notices" : "posts",
+  );
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("tab") === "notices") setAdminTab("notices");
+  }, [location.search]);
 
   // Social media state
   const [github, setGithub] = useState("");
@@ -414,7 +423,7 @@ export default function Admin() {
   if (!authed) {
     return (
       <div
-        className={`admin${dark ? " admin--dark" : ""}`}
+      className={`admin${dark ? " admin--dark" : ""}${adminTab === "notices" ? " admin--notices" : ""}`}
         style={{
           color: dark ? "#e4e4ea" : "#3b2f22",
           minHeight: "100vh",
@@ -466,6 +475,7 @@ export default function Admin() {
     { key: "posts" as const, label: "文章管理", icon: "📝" },
     { key: "categories" as const, label: "分类管理", icon: "📂" },
     { key: "images" as const, label: "图片管理", icon: "🖼" },
+    { key: "notices" as const, label: "游戏公告", icon: "📣" },
     { key: "social" as const, label: "社媒信息", icon: "🔗" },
     { key: "site" as const, label: "站点信息", icon: "🏝" },
     { key: "homepage" as const, label: "首页文案", icon: "📋" },
@@ -475,7 +485,7 @@ export default function Admin() {
   // ----- Admin panel -----
   return (
     <div
-      className={`admin${dark ? " admin--dark" : ""}`}
+      className={`admin${dark ? " admin--dark" : ""}${adminTab === "notices" ? " admin--notices" : ""}`}
       style={{
         color: dark ? "#e4e4ea" : "#3b2f22",
         minHeight: "100vh",
@@ -493,7 +503,10 @@ export default function Admin() {
             <button
               key={item.key}
               className={`admin-sidebar-item ${adminTab === item.key ? "admin-sidebar-item--active" : ""}`}
-              onClick={() => setAdminTab(item.key)}
+              onClick={() => {
+                setAdminTab(item.key);
+                navigate(item.key === "notices" ? "/admin?tab=notices" : "/admin", { replace: true });
+              }}
             >
               <span className="admin-sidebar-item-icon">{item.icon}</span>
               <span>{item.label}</span>
@@ -515,12 +528,17 @@ export default function Admin() {
 
       {/* Main */}
       <main className="admin-main">
+        {adminTab === "notices" && (
+          <Suspense fallback={<p>正在加载公告编辑器…</p>}>
+            <NoticePublisher />
+          </Suspense>
+        )}
         {/* Stats bar */}
-        <div className="admin-stats-bar">
+        {adminTab !== "notices" && <div className="admin-stats-bar">
           <span>📝 {posts.length} 篇文章</span>
           <span>📂 {categories.length} 个分类</span>
           <span>🏷️ {tagCount} 个标签</span>
-        </div>
+        </div>}
 
         {/* Posts Tab */}
         {adminTab === "posts" && (

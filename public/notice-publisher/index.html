@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公告发布工具 · Witcher Defense</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="island-theme.css">
+  <script>
+    document.documentElement.classList.toggle('dark', localStorage.getItem('lwyblog-dark') === '1');
+  </script>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>公告编辑工作区</h1>
+      <div class="subtitle">Witcher Defense</div>
+    </div>
+    <div class="env-panel">
+      <div class="env-group" id="envList"></div>
+      <div class="env-copy" title="将当前环境的页签、公告与图片覆盖到目标环境">
+        <span class="env-copy-label">复制至</span>
+        <select id="envCopyTarget" aria-label="目标环境"></select>
+        <button type="button" class="env-copy-btn" id="btnCopyEnv">确认</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button type="button" class="btn preview-open-btn" id="btnOpenPreview">客户端预览</button>
+        <button type="button" class="btn" id="btnImport">导入 JSON</button>
+        <button type="button" class="btn btn-primary" id="btnDeploy">一键部署当前环境</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="deploy-result" aria-live="polite">
+    <span class="deploy-status-dot" aria-hidden="true"></span>
+    <span id="deployStatus">资源地址：www.lwyzyc.com/game-notices/ · 使用后台部署配置</span>
+    <a id="deployUrl" hidden target="_blank" rel="noopener noreferrer"></a>
+    <a id="manifestUrl" hidden target="_blank" rel="noopener noreferrer"></a>
+  </div>
+  <div class="layout">
+    <aside class="panel">
+      <div class="panel-header">
+        <span>公告分类</span>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-mini" id="btnAddTab" title="新增页签">+ 新增</button>
+          <button type="button" class="btn btn-mini btn-danger-outline" id="btnDeleteTab" title="删除当前页签">删除</button>
+        </div>
+      </div>
+      <div class="panel-body" id="tabList"></div>
+      <div class="panel-header">
+        <span>公告列表</span>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-mini" id="btnAddItem" title="新增公告">+ 新增</button>
+          <button type="button" class="btn btn-mini btn-danger-outline" id="btnDeleteItem" title="删除当前公告">删除</button>
+        </div>
+      </div>
+      <div class="panel-body" id="itemList"></div>
+    </aside>
+
+    <main class="editor">
+      <div id="editorEmpty" class="empty-hint" style="display:none">请先选择或新增页签</div>
+      <div id="editorPanel"></div>
+    </main>
+
+    <aside class="panel preview-panel" id="clientPreview" aria-label="客户端预览">
+      <div class="panel-header">
+        <span>客户端预览（31% · 978×1535）</span>
+        <button type="button" class="btn btn-mini preview-close-btn" id="btnClosePreview" aria-label="关闭客户端预览">关闭</button>
+        <div class="preview-lang-group">
+          <button type="button" class="preview-lang-btn active" data-lang="cht">繁中</button>
+          <button type="button" class="preview-lang-btn" data-lang="en">EN</button>
+          <button type="button" class="preview-lang-btn" data-lang="kr">KR</button>
+        </div>
+      </div>
+      <div class="panel-body preview-mock">
+        <div class="preview-scale-wrap">
+        <div class="preview-window announcement-panel-mock" title="比例参照 AnnouncementPanel.prefab">
+          <div class="preview-panel-head">
+            <div class="preview-title-slot">
+              <div class="preview-title-bg"><span class="preview-title-text">公告</span></div>
+            </div>
+            <span class="preview-close-x" aria-hidden="true">×</span>
+          </div>
+          <div class="preview-tabs-slot">
+            <div id="previewTabs" class="preview-tabs-bar"></div>
+          </div>
+          <div class="preview-stage">
+            <div class="preview-body announcement-body">
+              <div class="preview-list-col">
+                <div id="previewList" class="preview-list-scroll"></div>
+              </div>
+              <div class="preview-detail-col">
+                <div class="preview-detail-inner">
+                  <div id="previewDetailBanner" class="preview-detail-banner" hidden></div>
+                  <div id="previewDetailText" class="preview-detail-text"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        <p class="preview-export-hint">
+          预览当前公告的客户端显示效果；点击顶部按钮部署当前环境。
+        </p>
+      </div>
+    </aside>
+
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
