@@ -191,4 +191,3 @@ textarea.content { min-height: 240px; line-height: 1.7; }
 .preview-panel .panel-header { position: sticky; top: 0; z-index: 2; }
 .preview-panel .panel-body { max-height: none; overflow: visible; flex: none; }
 .header-actions { flex-wrap: wrap; }
-
