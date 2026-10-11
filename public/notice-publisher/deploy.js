@@ -30,11 +30,31 @@ export async function deployNotice({ env, data, images, token, onProgress = () =
   const ref = await api('/git/ref/heads/main');
   const parent = await api('/git/commits/' + ref.object.sha);
   const existing = await api('/contents/public/game-notices/manifest.json?ref=' + ref.object.sha, undefined, undefined, true);
-  let manifest = { files: {}, project: 'witcherdefense', revision: 0, schemaVersion: 2 };
+  let manifest = { files: {}, revision: 0, schemaVersion: 2 };
   if (existing) {
     if (existing.encoding !== 'base64' || typeof existing.content !== 'string') throw new Error('无法读取现有 manifest.json');
     manifest = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(existing.content.replace(/\s/g, '')), c => c.charCodeAt(0))));
     if (!manifest.files || typeof manifest.files !== 'object' || Array.isArray(manifest.files) || !Number.isSafeInteger(manifest.revision) || manifest.revision < 0) throw new Error('现有 manifest.json 格式无效，已取消发布');
+  }
+  delete manifest.project;
+  const imagePrefix = env + '/images/';
+  for (const key of Object.keys(manifest.files)) {
+    if (key.startsWith(imagePrefix)) delete manifest.files[key];
+  }
+  // Traverse the pinned base tree so orphaned images are removed even without manifest records.
+  let imageTreeSha = parent.tree.sha;
+  for (const segment of ['public', 'game-notices', env, 'images']) {
+    const directory = await api('/git/trees/' + imageTreeSha);
+    if (directory.truncated || !Array.isArray(directory.tree)) throw new Error('无法完整读取历史图片目录，已取消发布');
+    const child = directory.tree.find(entry => entry.path === segment && entry.type === 'tree');
+    imageTreeSha = child?.sha;
+    if (!imageTreeSha) break;
+  }
+  let historicalImages = [];
+  if (imageTreeSha) {
+    const directory = await api('/git/trees/' + imageTreeSha + '?recursive=1');
+    if (directory.truncated || !Array.isArray(directory.tree)) throw new Error('历史图片列表不完整，已取消发布');
+    historicalImages = directory.tree.filter(entry => entry.type === 'blob');
   }
   const tree = [];
   const paths = new Map();
@@ -59,6 +79,16 @@ export async function deployNotice({ env, data, images, token, onProgress = () =
     }
   }
   const json = JSON.stringify(published, null, 2);
+  const retainedImages = new Set(Array.from(paths.values()));
+  for (const record of Object.values(manifest.files)) {
+    if (typeof record?.fileName === 'string') retainedImages.add(record.fileName);
+  }
+  for (const entry of historicalImages) {
+    const path = imagePrefix + entry.path;
+    if (!retainedImages.has(path)) {
+      tree.push({ path: 'public/game-notices/' + path, mode: entry.mode || '100644', type: 'blob', sha: null });
+    }
+  }
   const file = env + '_notice_data.json';
   const jsonBytes = new TextEncoder().encode(json);
   const jsonHash = await sha256(jsonBytes);
