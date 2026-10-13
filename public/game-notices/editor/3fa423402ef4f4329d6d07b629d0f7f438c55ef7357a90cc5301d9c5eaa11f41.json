@@ -1,0 +1,35 @@
+{
+  "tabs": [
+    {
+      "id": 1,
+      "sortOrder": 1,
+      "name": {
+        "cht": "公告",
+        "en": "Notice",
+        "kr": "공지"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "editor_deployment_test_20261012",
+      "tabId": 1,
+      "sortOrder": 100,
+      "startAt": 1791739281,
+      "endAt": 1794331341,
+      "showRedDot": true,
+      "entryImage": "",
+      "contentImage": "",
+      "title": {
+        "cht": "【測試】公告發布驗證",
+        "en": "[TEST] Notice deployment verification",
+        "kr": "[테스트] 공지 배포 확인"
+      },
+      "content": {
+        "cht": "<b>Editor 環境測試公告</b>\n此公告僅用於驗證公告發布、三語顯示與 manifest 更新流程，不代表正式營運通知。\n發布日期：2026-10-12。",
+        "en": "<b>Editor environment test notice</b>\nThis notice verifies publishing, multilingual display, and manifest updates. It is not a production announcement.\nPublished: 2026-10-12.",
+        "kr": "<b>Editor 환경 테스트 공지</b>\n공지 배포, 다국어 표시 및 manifest 갱신을 확인하기 위한 테스트입니다. 정식 운영 공지가 아닙니다.\n게시일: 2026-10-12."
+      }
+    }
+  ]
+}

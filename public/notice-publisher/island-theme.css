@@ -116,6 +116,7 @@ header .subtitle { font-size: 11px; margin-top: 3px; }
 }
 .deploy-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .deploy-result a { grid-column: 2; margin: 0; }
+#deployStatus { grid-column: 2; }
 .layout {
   flex: 1;
   min-height: 0;

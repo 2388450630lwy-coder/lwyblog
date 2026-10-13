@@ -23,7 +23,7 @@ export default function NoticePublisher() {
           <h1>游戏公告发布</h1>
           <p>编辑多语言公告，预览客户端效果，一键发布到游戏 CDN。</p>
         </div>
-        <span className="notice-page-note">资源域名：www.lwyzyc.com/game-notices/ · 草稿保存在当前浏览器</span>
+        <span className="notice-page-note">每个环境独立资源目录与 manifest.json · 草稿保存在当前浏览器</span>
       </div>
       <iframe
         ref={frame}

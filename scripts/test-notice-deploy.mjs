@@ -10,7 +10,7 @@ let manifestJson;
 let missingManifest = false;
 const existingManifest = { files: { 'pre_notice_data.json': { FileHash: 'old', fileName: 'old.json', size: 10 }, 'notice_en.txt': { FileHash: 'text', fileName: 'text.txt', size: 20 } }, project: 'witcherdefense', revision: 6, schemaVersion: 2, version: 'old-version' };
 let rejectRef = false;
-existingManifest.files['prod/images/unused.png'] = { FileHash: 'unused', fileName: 'prod/images/old-unused.png', size: 1 };
+existingManifest.files['images/unused.png'] = { FileHash: 'unused', fileName: 'images/old-unused.png', size: 1 };
 existingManifest.files['pre/images/keep.png'] = { FileHash: 'keep', fileName: 'pre/images/keep.png', size: 1 };
 globalThis.setTimeout = callback => { queueMicrotask(callback); return 0; };
 globalThis.fetch = async (url, options = {}) => {
@@ -18,7 +18,7 @@ globalThis.fetch = async (url, options = {}) => {
   calls.push({ url, method: options.method, body });
   let result = {};
   if (url.includes('/git/ref/heads/main')) result = { object: { sha: 'parent' } };
-  else if (url.includes('/contents/public/game-notices/manifest.json')) {
+  else if (url.includes('/contents/public/game-notices/prod/manifest.json')) {
     if (missingManifest) return { ok: false, status: 404, json: async () => ({ message: 'Not Found' }) };
     result = { encoding: 'base64', content: Buffer.from(JSON.stringify(existingManifest)).toString('base64') };
   }
@@ -45,8 +45,8 @@ globalThis.fetch = async (url, options = {}) => {
 try {
   const input = { env: 'prod', token: 'test', data: { tabs: [], items: [{ title: { cht: '公告' }, entryImage: 'prod/images/图片.png' }] }, images: [{ filename: '图片.png', blob: new Blob(['image bytes']) }] };
   const result = await deployNotice(input);
-  assert.equal(result.url, 'https://www.lwyzyc.com/game-notices/prod_notice_data.json');
-  assert.match(JSON.parse(json).items[0].entryImage, /^prod\/images\/[a-f0-9]{64}-图片\.png$/);
+  assert.equal(result.url, 'https://www.lwyzyc.com/game-notices/prod/prod_notice_data.json');
+  assert.match(JSON.parse(json).items[0].entryImage, /^images\/[a-f0-9]{64}-图片\.png$/);
   assert.equal(input.data.items[0].entryImage, 'prod/images/图片.png');
   const tree = calls.find(call => call.url.endsWith('/git/trees')).body;
   assert.equal(tree.tree.length, 6);
@@ -57,16 +57,18 @@ try {
   assert.equal(Object.hasOwn(manifest, 'project'), false);
   assert.deepEqual(manifest.files['pre_notice_data.json'], existingManifest.files['pre_notice_data.json']);
   assert.deepEqual(manifest.files['notice_en.txt'], existingManifest.files['notice_en.txt']);
-  assert.equal(Object.hasOwn(manifest.files, 'prod/images/unused.png'), false);
+  assert.equal(Object.hasOwn(manifest.files, 'images/unused.png'), false);
   assert.deepEqual(manifest.files['pre/images/keep.png'], existingManifest.files['pre/images/keep.png']);
   const entry = manifest.files['prod_notice_data.json'];
   assert.equal(entry.size, Buffer.byteLength(json));
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json));
   assert.equal(entry.FileHash, Buffer.from(digest).toString('hex'));
   assert.equal(entry.fileName, entry.FileHash + '.json');
-  assert.ok(tree.tree.some(file => file.path === 'public/game-notices/' + entry.fileName));
+  assert.ok(tree.tree.some(file => file.path === 'public/game-notices/prod/' + entry.fileName));
   assert.match(manifest.version, /^[a-f0-9]{64}$/);
-  assert.equal(result.manifestUrl, 'https://www.lwyzyc.com/game-notices/manifest.json');
+  assert.equal(result.manifestUrl, 'https://www.lwyzyc.com/game-notices/prod/manifest.json');
+  assert.ok(tree.tree.every(file => file.path.startsWith('public/game-notices/prod/')));
+  assert.ok(calls.some(call => call.url.includes('/contents/public/game-notices/prod/manifest.json?ref=parent')));
   assert.equal(tree.base_tree, 'base');
   assert.equal(calls.filter(call => call.method === 'PATCH').length, 1);
   assert.equal(calls.find(call => call.method === 'PATCH').body.force, false);
