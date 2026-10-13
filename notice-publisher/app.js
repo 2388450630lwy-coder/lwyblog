@@ -96,6 +96,7 @@
   }
 
   function renderEnvList() {
+    document.getElementById('environmentCdn').textContent = '当前环境资源地址：https://www.lwyzyc.com/game-notices/' + state.env + '/';
     const el = document.getElementById('envList');
     if (!el) return;
     el.innerHTML = '';
