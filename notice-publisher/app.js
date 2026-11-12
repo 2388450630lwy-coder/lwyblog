@@ -1856,6 +1856,62 @@
     document.getElementById('clear_content').onclick = function () { clearItemImage('content'); };
   }
 
+  async function loadPublishedNotices(askBeforeReplace) {
+    if (askBeforeReplace && !confirm('将用当前环境的线上公告替换本地草稿，是否继续？')) return;
+    const env = state.env;
+    const button = document.getElementById('btnLoadPublished');
+    button.disabled = true;
+    try {
+      const root = 'https://www.lwyzyc.com/game-notices/' + env + '/';
+      const response = await fetch(root + 'manifest.json?ts=' + Date.now(), { cache: 'no-store' });
+      if (!response.ok) throw new Error('清单加载失败：HTTP ' + response.status);
+      const manifest = await response.json();
+      const entry = manifest.files[env + '_notice_data.json'];
+      if (!entry) { toast('当前环境尚未发布公告'); return; }
+      async function download(record) {
+        const url = new URL(record.fileName, root);
+        if (!url.href.startsWith(root)) throw new Error('资源路径不属于当前环境');
+        const result = await fetch(url.href);
+        if (!result.ok) throw new Error('资源加载失败：HTTP ' + result.status);
+        const bytes = await result.arrayBuffer();
+        const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('');
+        if (bytes.byteLength !== record.size || digest !== record.FileHash) throw new Error('线上资源校验失败');
+        return bytes;
+      }
+      const data = JSON.parse(new TextDecoder().decode(await download(entry)));
+      const tabs = data.tabs.map(normalizeTab);
+      const items = data.items.map(normalizeItem);
+      const files = new Map();
+      for (const item of items) {
+        for (const kind of ['entry', 'content']) {
+          const path = item[kind + 'Image'];
+          if (!path || files.has(path)) continue;
+          const record = Object.values(manifest.files).find(value => value.fileName === path);
+          if (!record) throw new Error('清单中缺少图片：' + path);
+          files.set(path, new Blob([await download(record)]));
+        }
+      }
+      if (state.env !== env) return;
+      for (const [path, blob] of files) await persistImageBlob(env, path.split('/').pop(), blob);
+      revokeAllImageObjectUrls();
+      state.imageBlobs = {};
+      state.pendingItemFiles = {};
+      state.tabs = tabs;
+      state.items = items;
+      state.selectedTabId = null;
+      state.selectedItemId = null;
+      syncFormFromState();
+      saveEnv();
+      await hydrateEnvImages(env);
+      renderAll();
+      toast('已加载线上公告 · revision ' + manifest.revision);
+    } catch (error) {
+      toast('加载线上公告失败：' + error.message);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   function init() {
     const preview = document.getElementById('clientPreview');
     const openPreview = document.getElementById('btnOpenPreview');
@@ -1902,6 +1958,7 @@
     document.getElementById('btnDeploy').onclick = deployCurrentEnvironment;
 
     document.getElementById('btnImport').onclick = importJson;
+    document.getElementById('btnLoadPublished').onclick = function () { loadPublishedNotices(true); };
     document.querySelectorAll('.preview-lang-btn').forEach(function (btn) {
       btn.onclick = function () { state.previewLang = btn.dataset.lang; renderPreview(); };
     });

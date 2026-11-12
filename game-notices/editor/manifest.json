@@ -1,9 +1,9 @@
 {
   "files": {
     "editor_notice_data.json": {
-      "FileHash": "51cd3569203407f222a8788fe91cd98d5f41fc05b80d5ce27dd235a202868dac",
-      "fileName": "51cd3569203407f222a8788fe91cd98d5f41fc05b80d5ce27dd235a202868dac.json",
-      "size": 2055
+      "FileHash": "171ccee74c94561e63b69ac641b3aa1f9414049ac30424dc44aa8f192e2521ca",
+      "fileName": "171ccee74c94561e63b69ac641b3aa1f9414049ac30424dc44aa8f192e2521ca.json",
+      "size": 12036
     },
     "images/editor-test-entry.png": {
       "FileHash": "98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a",
@@ -16,7 +16,7 @@
       "size": 25624
     }
   },
-  "revision": 2,
+  "revision": 3,
   "schemaVersion": 2,
-  "version": "9e382cafafc1bef700194ad1dc56862ef22138a0079638544d50ff6d2de5853e"
+  "version": "be07780edd3e57a9c33aae29f570bb0e8d7dbd8a5d1e38e0c6cb8a185fe0893c"
 }
