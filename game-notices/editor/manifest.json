@@ -1,12 +1,22 @@
 {
   "files": {
     "editor_notice_data.json": {
-      "FileHash": "3fa423402ef4f4329d6d07b629d0f7f438c55ef7357a90cc5301d9c5eaa11f41",
-      "fileName": "3fa423402ef4f4329d6d07b629d0f7f438c55ef7357a90cc5301d9c5eaa11f41.json",
-      "size": 1219
+      "FileHash": "51cd3569203407f222a8788fe91cd98d5f41fc05b80d5ce27dd235a202868dac",
+      "fileName": "51cd3569203407f222a8788fe91cd98d5f41fc05b80d5ce27dd235a202868dac.json",
+      "size": 2055
+    },
+    "images/editor-test-entry.png": {
+      "FileHash": "98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a",
+      "fileName": "images/98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a-editor-test-entry.png",
+      "size": 12332
+    },
+    "images/editor-test-content.png": {
+      "FileHash": "a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b",
+      "fileName": "images/a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b-editor-test-content.png",
+      "size": 25624
     }
   },
-  "revision": 1,
+  "revision": 2,
   "schemaVersion": 2,
-  "version": "685599a4efecd71188480af59f462846aa585421c9752c125a3de7419a833c2b"
+  "version": "9e382cafafc1bef700194ad1dc56862ef22138a0079638544d50ff6d2de5853e"
 }
