@@ -4,31 +4,31 @@
       "id": 1,
       "sortOrder": 1,
       "name": {
-        "cht": "公告",
-        "en": "Notice",
-        "kr": "공지"
+        "cht": "測試公告",
+        "en": "Test Notices",
+        "kr": "테스트 공지"
       }
     }
   ],
   "items": [
     {
-      "id": "editor_deployment_test_20261012",
+      "id": "editor_image_test_20261112",
       "tabId": 1,
       "sortOrder": 100,
-      "startAt": 1791739281,
-      "endAt": 1794331341,
+      "startAt": 1794497725,
+      "endAt": 1797089785,
       "showRedDot": true,
-      "entryImage": "",
-      "contentImage": "",
+      "entryImage": "images/98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a-editor-test-entry.png",
+      "contentImage": "images/a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b-editor-test-content.png",
       "title": {
-        "cht": "【測試】公告發布驗證",
-        "en": "[TEST] Notice deployment verification",
-        "kr": "[테스트] 공지 배포 확인"
+        "cht": "【測試】入口縮圖與正文配圖驗證",
+        "en": "[TEST] Thumbnail and content image verification",
+        "kr": "[테스트] 썸네일 및 본문 이미지 확인"
       },
       "content": {
-        "cht": "<b>Editor 環境測試公告</b>\n此公告僅用於驗證公告發布、三語顯示與 manifest 更新流程，不代表正式營運通知。\n發布日期：2026-10-12。",
-        "en": "<b>Editor environment test notice</b>\nThis notice verifies publishing, multilingual display, and manifest updates. It is not a production announcement.\nPublished: 2026-10-12.",
-        "kr": "<b>Editor 환경 테스트 공지</b>\n공지 배포, 다국어 표시 및 manifest 갱신을 확인하기 위한 테스트입니다. 정식 운영 공지가 아닙니다.\n게시일: 2026-10-12."
+        "cht": "<size=28><b>Editor 圖片公告測試</b></size>\n發布日期：2026-11-12\n\n<color=#4EE3BE>驗證項目</color>\n1. 列表入口縮圖：250 × 175。\n2. 正文配圖：550 × 320，等比顯示。\n3. 切換繁中、英文、韓文，確認標題與正文。\n4. 依 manifest 校驗圖片 SHA-256 與檔案大小。\n\n本公告僅供 Editor 環境測試，不代表正式營運通知。",
+        "en": "<size=28><b>Editor image notice test</b></size>\nPublished: 2026-11-12\n\n<color=#4EE3BE>Verification</color>\n1. Entry thumbnail: 250 x 175.\n2. Content image: 550 x 320, preserve aspect ratio.\n3. Switch Traditional Chinese, English and Korean.\n4. Verify image SHA-256 and byte size using the manifest.\n\nEditor test only. This is not a production announcement.",
+        "kr": "<size=28><b>Editor 이미지 공지 테스트</b></size>\n게시일: 2026-11-12\n\n<color=#4EE3BE>확인 항목</color>\n1. 목록 썸네일: 250 x 175.\n2. 본문 이미지: 550 x 320, 비율 유지.\n3. 번체 중국어, 영어, 한국어 전환.\n4. manifest의 SHA-256 및 파일 크기 검증.\n\nEditor 환경 전용 테스트이며 정식 운영 공지가 아닙니다."
       }
     }
   ]
