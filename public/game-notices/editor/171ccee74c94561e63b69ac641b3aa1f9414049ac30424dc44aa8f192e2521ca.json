@@ -1,0 +1,93 @@
+{
+  "tabs": [
+    {
+      "id": 1,
+      "sortOrder": 1,
+      "name": {
+        "cht": "公告",
+        "en": "Notice",
+        "kr": "공지"
+      }
+    },
+    {
+      "id": 2,
+      "sortOrder": 2,
+      "name": {
+        "cht": "系統",
+        "en": "System",
+        "kr": "시스템"
+      }
+    },
+    {
+      "id": 3,
+      "sortOrder": 3,
+      "name": {
+        "cht": "資訊",
+        "en": "News",
+        "kr": "소식"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "editor_release_notice_20261112",
+      "tabId": 1,
+      "title": {
+        "cht": "版本更新與服務調整說明",
+        "en": "Version Update and Service Notice",
+        "kr": "버전 업데이트 및 서비스 안내"
+      },
+      "content": {
+        "cht": "<size=28><b>版本更新與服務調整說明</b></size>\n親愛的指揮官：\n為持續改善遊戲體驗，本次版本將針對公告展示、介面操作及資源載入流程進行整合驗證，請參閱以下說明。\n\n<color=#4EE3BE><b>一、更新內容</b></color>\n1. 公告中心新增公告、系統與資訊分類，便於查閱不同類型的消息。\n2. 優化列表縮圖與正文配圖的顯示方式，圖片應保持原始比例。\n3. 完善繁體中文、英文與韓文的文字呈現，切換語言後即時刷新內容。\n\n<b>二、注意事項</b>\n請於網路穩定時開啟公告中心。首次載入圖片可能需要少量時間；若畫面暫未更新，請關閉視窗後重新開啟。若持續發生異常，請提供裝置型號、系統版本與畫面截圖，以便定位問題。\n\n<b>三、適用範圍</b>\n本內容採正式公告格式，僅供 Editor 測試環境驗證，不構成正式停服、獎勵或版本上線承諾。感謝您的理解與配合。",
+        "en": "<size=28><b>Version Update and Service Notice</b></size>\nDear Commander,\nThis release validates the notice interface, navigation and resource loading experience. Please review the following information.\n\n<color=#4EE3BE><b>1. Update Overview</b></color>\nThe notice center provides Notice, System and News categories. Entry thumbnails and content images retain their aspect ratios. Traditional Chinese, English and Korean text refreshes when the language changes.\n\n<b>2. Player Guidance</b>\nOpen the notice center with a stable network connection. Images may take a moment to load on first use. If information appears outdated, close and reopen the panel. When reporting a persistent issue, include your device model, operating system version and a screenshot.\n\n<b>3. Scope</b>\nThis operational-style notice is for the Editor test environment only. It does not announce production downtime, rewards or a confirmed release date. Thank you for your cooperation.",
+        "kr": "<size=28><b>버전 업데이트 및 서비스 안내</b></size>\n지휘관 여러분께,\n이번 검증에서는 공지 화면, 메뉴 이동 및 리소스 로딩 흐름을 점검합니다. 아래 내용을 확인해 주세요.\n\n<color=#4EE3BE><b>1. 주요 변경 사항</b></color>\n공지 센터를 공지, 시스템, 소식으로 구분합니다. 목록 썸네일과 본문 이미지는 원본 비율로 표시되며 번체 중국어, 영어, 한국어 전환 시 텍스트가 갱신됩니다.\n\n<b>2. 이용 안내</b>\n안정적인 네트워크 환경에서 공지 센터를 열어 주세요. 첫 실행 시 이미지 로딩에 시간이 걸릴 수 있습니다. 내용이 갱신되지 않으면 창을 닫았다가 다시 열어 주세요. 문제가 반복되면 기기 모델, 운영체제 버전 및 화면 캡처를 제공해 주세요.\n\n<b>3. 적용 범위</b>\n이 내용은 Editor 환경 검증용이며 실제 점검, 보상 또는 출시 일정에 대한 약속이 아닙니다. 협조에 감사드립니다."
+      },
+      "sortOrder": 100,
+      "startAt": 1794498203,
+      "endAt": 1797090263,
+      "showRedDot": true,
+      "entryImage": "images/98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a-editor-test-entry.png",
+      "contentImage": "images/a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b-editor-test-content.png"
+    },
+    {
+      "id": "editor_system_notice_20261112",
+      "tabId": 2,
+      "title": {
+        "cht": "帳號安全與資源更新指引",
+        "en": "Account Security and Resource Update Guide",
+        "kr": "계정 보안 및 리소스 업데이트 안내"
+      },
+      "content": {
+        "cht": "<size=28><b>帳號安全與資源更新指引</b></size>\n為保障帳號資料與正常遊玩，請留意以下系統使用建議。\n\n<color=#4EE3BE><b>一、帳號安全</b></color>\n請妥善保管登入資訊，不與他人共用驗證碼、密碼或帳號憑證。若發現異常登入，請透過遊戲既有的客服與帳號安全入口處理。公告頁面不會要求輸入支付資料或登入憑證。\n\n<b>二、資源更新</b>\n公告系統會先讀取目前環境的資源清單，再取得對應版本的文字與圖片。請確認裝置有足夠儲存空間；更新過程中避免頻繁切換網路。文字與圖片可能分別完成載入，請稍候片刻。\n\n<b>三、異常排查</b>\n若圖片未顯示，可重新開啟公告中心並確認網路連線。請勿自行刪除遊戲的重要資料。需要協助時，請記錄發生時間、公告標題及錯誤畫面。\n\n<b>四、環境說明</b>\n本頁用於系統類公告的長文本、段落與配圖驗證，僅在 Editor 測試環境展示。",
+        "en": "<size=28><b>Account Security and Resource Update Guide</b></size>\nPlease follow these recommendations to protect your account and maintain normal access.\n\n<color=#4EE3BE><b>1. Account Security</b></color>\nKeep login information private. Never share passwords, verification codes or account credentials. Use the existing in-game support and security channels if you notice unusual access. The notice center will not request payment details or login credentials.\n\n<b>2. Resource Updates</b>\nThe client reads the current environment manifest before downloading the matching text and images. Maintain sufficient storage and avoid repeatedly changing networks during updates. Text and images may finish loading separately.\n\n<b>3. Troubleshooting</b>\nIf an image does not appear, verify your connection and reopen the panel. Do not delete important game data manually. Include the time, notice title and a screenshot when requesting assistance.\n\n<b>4. Scope</b>\nThis System-category content validates long paragraphs and images in the Editor test environment only.",
+        "kr": "<size=28><b>계정 보안 및 리소스 업데이트 안내</b></size>\n계정 보호와 원활한 이용을 위해 다음 사항을 확인해 주세요.\n\n<color=#4EE3BE><b>1. 계정 보안</b></color>\n비밀번호, 인증 코드 및 계정 정보를 다른 사람과 공유하지 마세요. 비정상적인 접속이 의심되면 기존 게임 내 고객지원 및 보안 경로를 이용해 주세요. 공지 센터는 결제 정보나 로그인 자격 증명을 요구하지 않습니다.\n\n<b>2. 리소스 업데이트</b>\n클라이언트는 현재 환경의 manifest를 읽은 후 해당 버전의 텍스트와 이미지를 다운로드합니다. 저장 공간을 확보하고 업데이트 중 네트워크를 자주 변경하지 마세요. 텍스트와 이미지의 표시 시점은 다를 수 있습니다.\n\n<b>3. 문제 해결</b>\n이미지가 보이지 않으면 연결을 확인하고 공지 창을 다시 열어 주세요. 중요한 게임 데이터를 직접 삭제하지 마세요. 문의 시 발생 시간, 공지 제목 및 화면을 함께 전달해 주세요.\n\n<b>4. 적용 범위</b>\nEditor 테스트 환경의 시스템 분류, 긴 문단 및 이미지 검증용입니다."
+      },
+      "sortOrder": 100,
+      "startAt": 1794498203,
+      "endAt": 1797090263,
+      "showRedDot": true,
+      "entryImage": "images/98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a-editor-test-entry.png",
+      "contentImage": "images/a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b-editor-test-content.png"
+    },
+    {
+      "id": "editor_news_notice_20261112",
+      "tabId": 3,
+      "title": {
+        "cht": "開發進度與遊戲體驗優化簡報",
+        "en": "Development Progress and Experience Briefing",
+        "kr": "개발 현황 및 이용 경험 개선 소식"
+      },
+      "content": {
+        "cht": "<size=28><b>開發進度與遊戲體驗優化簡報</b></size>\n親愛的指揮官：\n本期資訊將介紹公告中心的設計方向與體驗優化重點，協助您更清楚地掌握遊戲消息。\n\n<color=#4EE3BE><b>一、消息分類更清楚</b></color>\n公告頁簽聚焦版本與服務通知；系統頁簽提供帳號、資源更新與操作指引；資訊頁簽則整理開發進度、功能介紹與相關消息。您可以直接點選頁簽與列表查看完整內容。\n\n<b>二、閱讀體驗優化</b>\n透過標題、分段、重點標色與配圖，較長的內容也能保持清楚的閱讀層次。不同語言將使用對應的文字內容，圖片則共用同一組資源，以便維持一致的視覺資訊。\n\n<b>三、後續驗證方向</b>\n將持續檢查長文本捲動、快速切換分類、圖片載入與離線情境。歡迎於測試過程中記錄閱讀不便或顯示異常，作為介面調整的參考。\n\n本簡報屬於 Editor 環境的展示資料，文中設計方向不代表正式版本的交付承諾。",
+        "en": "<size=28><b>Development Progress and Experience Briefing</b></size>\nDear Commander,\nThis briefing introduces the notice center design and its readability improvements.\n\n<color=#4EE3BE><b>1. Clearer Categories</b></color>\nNotice covers version and service information. System provides account, update and usage guidance. News presents development progress and feature introductions. Select a category and an entry to read the complete message.\n\n<b>2. Reading Experience</b>\nHeadings, paragraphs, highlighted points and illustrations help organize longer messages. Each language uses its own text while sharing the same image resources for consistent visual information.\n\n<b>3. Further Validation</b>\nTesting will cover long-text scrolling, fast category changes, image loading and offline behavior. Please record readability issues and display errors during testing so they can inform interface improvements.\n\nThis is Editor demonstration content. Design directions described here are not production delivery commitments.",
+        "kr": "<size=28><b>개발 현황 및 이용 경험 개선 소식</b></size>\n지휘관 여러분께,\n이번 소식에서는 공지 센터의 구성 방향과 가독성 개선 내용을 소개합니다.\n\n<color=#4EE3BE><b>1. 명확한 분류</b></color>\n공지는 버전 및 서비스 안내를, 시스템은 계정과 업데이트 이용 지침을, 소식은 개발 현황과 기능 소개를 제공합니다. 분류와 목록 항목을 선택하여 전체 내용을 확인할 수 있습니다.\n\n<b>2. 읽기 경험 개선</b>\n제목, 문단, 강조 색상 및 이미지를 활용하여 긴 내용을 정리합니다. 언어별 텍스트를 제공하며 동일한 이미지 리소스를 공유하여 시각 정보를 일관되게 유지합니다.\n\n<b>3. 추가 검증</b>\n긴 문서 스크롤, 빠른 분류 전환, 이미지 로딩 및 오프라인 동작을 확인할 예정입니다. 테스트 중 읽기 불편이나 표시 오류를 기록해 주세요.\n\n이 문서는 Editor 시연 데이터이며 정식 버전의 제공 일정을 약속하지 않습니다."
+      },
+      "sortOrder": 100,
+      "startAt": 1794498203,
+      "endAt": 1797090263,
+      "showRedDot": true,
+      "entryImage": "images/98eb71da8ec31b79cf990207e48158cbf746446b2b216dfe9016ede875534c7a-editor-test-entry.png",
+      "contentImage": "images/a9a06bb2905786291059481b00601598d66e32b3386aa446d1c403afa8c16e5b-editor-test-content.png"
+    }
+  ]
+}
